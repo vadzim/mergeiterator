@@ -59,5 +59,6 @@ typings/
 
 # sources
 .babelrc
+.prettier
 source
 example
