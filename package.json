@@ -11,7 +11,7 @@
   "main": "distr/module.js",
   "author": "Vadzim Zieńka <developer@vadzim.info>",
   "scripts": {
-    "build": "babel source --out-dir distr",
+    "build": "babel source --out-dir distr && cd distr && (for f in $(find | grep -E '.js$'); do cp ../source/$f $f.flow; done) && cd ..",
     "prettier": "prettier --write $(cat .prettier) 'source/**/*.js' '*.js'",
     "prepare": "npm run build",
     "test": "jest",
