@@ -12,7 +12,7 @@
   "author": "Vadzim Zieńka <developer@vadzim.info>",
   "scripts": {
     "build": "babel source --out-dir distr && cd distr && (for f in $(find | grep -E '.js$'); do cp ../source/$f $f.flow; done) && cd ..",
-    "prettier": "prettier --write $(cat .prettier) 'source/**/*.js' '*.js'",
+    "prettier": "prettier --write $(cat .prettier) 'source/**/*.js' 'example/**/*.js' '*.js'",
     "prepare": "npm run build",
     "test": "jest",
     "go": "npm run prettier && npm run build && npm run test"
