@@ -1,0 +1,37 @@
+{
+  "name": "name",
+  "version": "0.0.1",
+  "description": "description",
+  "keywords": [],
+  "repository": "https://github.com/vadzim/repository",
+  "bugs": {
+    "url": "https://github.com/vadzim/repository/issues"
+  },
+  "contributors": [],
+  "main": "distr/module.js",
+  "author": "Vadzim Zieńka <developer@vadzim.info>",
+  "scripts": {
+    "build": "babel source --out-dir distr",
+    "prettier": "prettier --write $(cat .prettier) 'source/**/*.js' '*.js'",
+    "prepare": "npm run build",
+    "test": "jest",
+    "go": "npm run prettier && npm run build && npm run test"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-idx": "^2.0.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-flow": "^6.23.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "flow-bin": "^0.56.0",
+    "idx": "^1.5.0",
+    "jest": "^20.0.4",
+    "prettier": "^1.5.3"
+  },
+  "dependencies": {
+    "babel-runtime": "^6.26.0"
+  }
+}
