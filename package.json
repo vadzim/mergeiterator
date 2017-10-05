@@ -10,9 +10,12 @@
     "AsyncIterator"
   ],
   "repository": "https://github.com/vadzim/mergeiterator",
-  "author": "developer@vadzim.info",
+  "bugs": {
+    "url": "https://github.com/vadzim/mergeiterator/issues"
+  },
   "contributors": [],
   "main": "distr/mergeiterator.js",
+  "author": "Vadzim Zieńka <developer@vadzim.info>",
   "scripts": {
     "build": "babel source --out-dir distr",
     "prettier": "prettier --write $(cat .prettier) 'source/**/*.js' 'example/**/*.js' '*.js'",
@@ -21,9 +24,6 @@
     "go": "npm run prettier && npm run build && npm run test"
   },
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/vadzim/mergeiterator/issues"
-  },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-add-module-exports": "^0.2.1",
