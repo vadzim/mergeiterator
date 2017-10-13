@@ -1,7 +1,3 @@
-if (!Symbol.asyncIterator) {
-	Symbol.asyncIterator = Symbol("asyncIterator")
-}
-
 const getIterator = iterable =>
 	typeof iterable[Symbol.asyncIterator] === "function"
 		? iterable[Symbol.asyncIterator]()
