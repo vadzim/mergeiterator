@@ -17,7 +17,7 @@
   "main": "distr/mergeiterator.js",
   "author": "Vadzim Zieńka <developer@vadzim.info>",
   "scripts": {
-    "build": "babel source --out-dir distr && cd distr && (for f in $(find | grep -E '.js$'); do cp ../source/$f $f.flow; done) && cd ..",
+    "build": "rm distr/*; babel source --out-dir distr && cd distr && (for f in $(find | grep -E '.js$'); do if grep @flow ../source/$f >/dev/null; then cp ../source/$f $f.flow; fi; done) && cd ..",
     "prettier": "prettier --write $(cat .prettier) 'source/**/*.js' 'example/**/*.js' '*.js'",
     "prepare": "npm run build",
     "test": "jest",
