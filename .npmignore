@@ -60,5 +60,6 @@ typings/
 # sources
 .babelrc
 .prettier
+.flowconfig
 source
 example
