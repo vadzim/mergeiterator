@@ -1,9 +1,13 @@
-# mergeIterator
+# mergeiterator
 Merges async iterators.
 
 ### Using ###
 
 This utility is for merging together async iterators.
+
+```js
+merge(collection_of_iterables): Iterable
+```
 
 Pass it a collection of iterables and it'll return an [async iterator](https://github.com/tc39/proposal-async-iteration), which will contain all values from those iterables. Those iterables and the collection of them can be arrays, calls to generators, or any other kind of iterable, synchronous or async, finite or infinite.
 
