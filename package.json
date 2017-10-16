@@ -1,6 +1,6 @@
 {
   "name": "mergeiterator",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "merges async iterators",
   "keywords": [
     "merge",
