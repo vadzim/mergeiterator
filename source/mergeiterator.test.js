@@ -31,10 +31,10 @@ test("mergeiterator", async () => {
 		],
 	])
 	expect(await it.next()).toEqual({ value: 1, done: false }) // 0ms
+	expect(await it.next()).toEqual({ value: 2, done: false }) // 0
 	expect(await it.next()).toEqual({ value: 3, done: false }) // 0 #3.1
 	expect(await it.next()).toEqual({ value: 2, done: false }) // 0
 	expect(await it.next()).toEqual({ value: 5, done: false }) // 0 #5.1
-	expect(await it.next()).toEqual({ value: 2, done: false }) // 0
 	expect(await it.next()).toEqual({ value: 3, done: false }) // 33 #3.2
 	expect(await it.next()).toEqual({ value: 5, done: false }) // 55 #5.2
 	expect(await it.next()).toEqual({ value: 3, done: false }) // 66 #3.3
@@ -189,24 +189,6 @@ test("early throwing error", async () => {
 		thrown = e
 	}
 	expect(thrown).toBe(error)
-})
-
-test("generator return", async () => {
-	const iterator = merge(
-		(async function*() {
-			yield (async function*() {
-				return 1
-			})()
-			yield []
-			yield (async function*() {
-				yield 2
-				return 3
-			})()
-			return 4
-		})(),
-	)
-	expect(await iterator.next()).toEqual({ done: false, value: 2 })
-	expect(await iterator.next()).toEqual({ done: true, value: Object.assign([1, undefined, 3], { value: 4 }) })
 })
 
 test("infinite number of infinite iterators", async () => {

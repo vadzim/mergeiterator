@@ -1,3 +1,5 @@
+import defineConstants from "define-constants"
+
 const getIterator = iterable =>
 	typeof iterable[Symbol.asyncIterator] === "function"
 		? iterable[Symbol.asyncIterator]()
@@ -5,164 +7,135 @@ const getIterator = iterable =>
 			? iterable[Symbol.iterator]()
 			: typeof iterable.next === "function" ? iterable : iterable[Symbol.asyncIterator]()
 
-const resolveDone = value => ({ value, done: true })
-const resolveNotDone = value => ({ value, done: false })
-const resolveRecord = ({ value, done }) => Promise.resolve(value).then(done ? resolveDone : resolveNotDone)
-const resolveThenable = promise => Promise.resolve(promise).then(resolveRecord)
+const { CONTINUATION, RETURN, VALUE, ERROR } = defineConstants()
 
-export default function merge(sequences) {
+export default async function* merge(sequences) {
 	const sequenceIterator = getIterator(sequences)
-	const ticks = []
-	const results = []
-	const resolvers = []
-	const returnedValues = []
-	let mergeResult = { value: returnedValues, done: true }
-	let mergeResover,
-		mergePromise = new Promise(resolve => (mergeResover = resolve))
+	let iteratorsCount = 1
+	let onOpPushed = () => {}
+	const ops = []
 	let inputClosed = false
-	let outputClosed = false
-	let count = 0
-	let remainingIterators = 1
 
-	function copyResults() {
-		while (!outputClosed && resolvers.length > 0 && results.length > 0) {
-			resolvers.shift()(results.shift())
-		}
-		if (inputClosed || outputClosed) {
-			while (resolvers.length > 0) {
-				resolvers.shift()({ value: undefined, done: true })
-			}
-		}
-		if (resolvers.length > 0 || inputClosed || outputClosed) {
-			while (ticks.length) {
-				ticks.shift()()
-			}
+	function pushOp(what, data) {
+		ops.push({ what, data })
+		onOpPushed()
+	}
+
+	function onIteratorClosed() {
+		--iteratorsCount
+		if (iteratorsCount === 0) {
+			pushOp(RETURN, undefined)
 		}
 	}
 
-	function pushResult(promise) {
-		if (!inputClosed) {
-			results.push(promise)
-		}
+	function closeIterator(iterator) {
+		Promise.resolve(iterator.return && iterator.return())
+			.catch(error => {
+				pushOp(ERROR, error)
+			})
+			.then(onIteratorClosed)
 	}
 
-	function iteratorFinished() {
-		--remainingIterators
-		if (remainingIterators === 0) {
-			pushResult(mergeResult)
-			close()
-			mergeResover(mergeResult)
+	function readSequenceIterator() {
+		if (inputClosed) {
+			return closeIterator(sequenceIterator)
 		}
-	}
+		Promise.resolve(sequenceIterator.next()).then(
+			({ value, done }) => {
+				if (done) {
+					return onIteratorClosed()
+				}
+				if (inputClosed) {
+					return closeIterator(sequenceIterator)
+				}
+				Promise.resolve(value).then(
+					value => {
+						if (inputClosed) {
+							return closeIterator(sequenceIterator)
+						}
+						const dataIterator = getIterator(value)
+						++iteratorsCount
+						pushOp(CONTINUATION, readDataIterator) // do not call readDataIterator directly to hold possible exceptions in the right place
+						pushOp(CONTINUATION, readSequenceIterator)
 
-	function closeIterator(iterator, returnIndex) {
-		if (typeof iterator.return === "function") {
-			resolveThenable(iterator.return())
-				.then(
-					({ value, done }) => {
-						if (done) {
-							returnedValues[returnIndex] = value
+						function readDataIterator() {
+							if (inputClosed) {
+								return closeIterator(dataIterator)
+							}
+							Promise.resolve(dataIterator.next()).then(
+								({ value, done }) => {
+									if (done) {
+										return onIteratorClosed()
+									}
+									if (inputClosed) {
+										return closeIterator(dataIterator)
+									}
+									Promise.resolve(value).then(
+										value => {
+											if (inputClosed) {
+												return closeIterator(dataIterator)
+											}
+											pushOp(VALUE, value)
+											pushOp(CONTINUATION, readDataIterator)
+										},
+										error => {
+											pushOp(ERROR, error)
+											closeIterator(dataIterator)
+										},
+									)
+								},
+								error => {
+									pushOp(ERROR, error)
+									onIteratorClosed()
+								},
+							)
 						}
 					},
 					error => {
-						mergeResult = Promise.reject(error)
+						pushOp(ERROR, error)
+						closeIterator(sequenceIterator)
 					},
 				)
-				.then(iteratorFinished)
-		} else {
-			iteratorFinished()
-		}
-	}
-
-	function closeSeq() {
-		closeIterator(sequenceIterator, "value")
-	}
-
-	function nextSeq() {
-		if (inputClosed) {
-			return closeIterator(sequenceIterator, "value")
-		}
-		const sequencePromise = resolveThenable(sequenceIterator.next())
-		sequencePromise.then(
-			function onSequenceResolve({ value, done }) {
-				if (done) {
-					if (value !== undefined) {
-						returnedValues.value = value
-					}
-					iteratorFinished()
-				} else {
-					++remainingIterators
-					const index = count++
-					const valueIterator = getIterator(value)
-
-					function nextValue() {
-						if (inputClosed) {
-							return closeIterator(valueIterator, index)
-						}
-						const valuePromise = resolveThenable(valueIterator.next())
-						valuePromise.then(
-							function onValueResolve({ value, done }) {
-								if (done) {
-									returnedValues[index] = value
-									iteratorFinished()
-								} else {
-									pushResult(valuePromise)
-									ticks.push(nextValue)
-									copyResults()
-								}
-							},
-							function onValueReject() {
-								pushResult(valuePromise)
-								close()
-							},
-						)
-					}
-
-					nextValue()
-					ticks.push(nextSeq)
-					copyResults()
-				}
 			},
-			function onSequenceReject() {
-				pushResult(sequencePromise)
-				close()
+			error => {
+				pushOp(ERROR, error)
+				onIteratorClosed()
 			},
 		)
 	}
 
-	function close() {
+	pushOp(CONTINUATION, readSequenceIterator)
+
+	try {
+		for (;;) {
+			if (ops.length === 0) {
+				await new Promise(resolve => (onOpPushed = resolve))
+			}
+			const { what, data } = ops.shift()
+
+			switch (what) {
+				case CONTINUATION:
+					data()
+					break
+				case RETURN:
+					return
+				case VALUE:
+					yield data
+					break
+				case ERROR:
+					throw data
+			}
+		}
+	} finally {
 		inputClosed = true
-		copyResults()
+		while (iteratorsCount > 0) {
+			if (ops.length === 0) {
+				await new Promise(resolve => (onOpPushed = resolve))
+			}
+			const { what, data } = ops.shift()
+			if (what === CONTINUATION) {
+				data()
+			}
+		}
 	}
-
-	ticks.push(nextSeq)
-
-	const iterator = {
-		[Symbol.asyncIterator]: () => iterator,
-		next: () =>
-			new Promise(resolve => {
-				resolvers.push(resolve)
-				copyResults()
-			}),
-		return: value =>
-			new Promise(resolve => {
-				if (resolvers.length === 0) {
-					finish()
-				} else {
-					const last = resolvers.pop()
-					resolvers.push(value => {
-						last(value)
-						finish()
-					})
-				}
-				function finish() {
-					outputClosed = true
-					mergeResult = { value, done: true }
-					resolve(mergePromise)
-					close()
-				}
-			}),
-	}
-
-	return iterator
 }
