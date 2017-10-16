@@ -191,6 +191,24 @@ test("early throwing error", async () => {
 	expect(thrown).toBe(error)
 })
 
+test("generator return", async () => {
+	const iterator = merge(
+		(async function*() {
+			yield (async function*() {
+				return 1
+			})()
+			yield []
+			yield (async function*() {
+				yield 2
+				return 3
+			})()
+			return 4
+		})(),
+	)
+	expect(await iterator.next()).toEqual({ done: false, value: 2 })
+	expect(await iterator.next()).toEqual({ done: true, value: Object.assign([1, undefined, 3], { value: 4 }) })
+})
+
 test("infinite number of infinite iterators", async () => {
 	let c = 0
 	async function* iterable(n) {

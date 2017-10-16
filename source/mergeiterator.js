@@ -86,7 +86,9 @@ export default function merge(sequences) {
 		sequencePromise.then(
 			function onSequenceResolve({ value, done }) {
 				if (done) {
-					returnedValues.value = value
+					if (value !== undefined) {
+						returnedValues.value = value
+					}
 					iteratorFinished()
 				} else {
 					++remainingIterators
