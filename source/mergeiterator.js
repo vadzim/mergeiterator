@@ -46,14 +46,6 @@ export default function merge(sequences) {
 		}
 	}
 
-	function pushNext(next, abort) {
-		if (!inputClosed) {
-			ticks.push(next)
-		} else {
-			abort()
-		}
-	}
-
 	function iteratorFinished() {
 		--remainingIterators
 		if (remainingIterators === 0) {
@@ -87,6 +79,9 @@ export default function merge(sequences) {
 	}
 
 	function nextSeq() {
+		if (inputClosed) {
+			return closeIterator(sequenceIterator, "value")
+		}
 		const sequencePromise = resolveThenable(sequenceIterator.next())
 		sequencePromise.then(
 			function onSequenceResolve({ value, done }) {
@@ -98,11 +93,10 @@ export default function merge(sequences) {
 					const index = count++
 					const valueIterator = getIterator(value)
 
-					function closeValue() {
-						closeIterator(valueIterator, index)
-					}
-
 					function nextValue() {
+						if (inputClosed) {
+							return closeIterator(valueIterator, index)
+						}
 						const valuePromise = resolveThenable(valueIterator.next())
 						valuePromise.then(
 							function onValueResolve({ value, done }) {
@@ -111,7 +105,7 @@ export default function merge(sequences) {
 									iteratorFinished()
 								} else {
 									pushResult(valuePromise)
-									pushNext(nextValue, closeValue)
+									ticks.push(nextValue)
 									copyResults()
 								}
 							},
@@ -123,7 +117,7 @@ export default function merge(sequences) {
 					}
 
 					nextValue()
-					pushNext(nextSeq, closeSeq)
+					ticks.push(nextSeq)
 					copyResults()
 				}
 			},

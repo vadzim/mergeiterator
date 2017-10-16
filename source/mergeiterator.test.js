@@ -85,6 +85,112 @@ test("reading ahead", async () => {
 	await done.promise
 })
 
+test("no extra yield after break: sync generator", async () => {
+	let extraYield = false
+	for await (const x of merge([
+		(function*() {
+			yield 1
+			extraYield = true
+			yield 2
+		})(),
+	])) {
+		break
+	}
+	expect(extraYield).toEqual(false)
+})
+
+test("no extra yield after break: async generator", async () => {
+	let extraYield = false
+	for await (const x of merge([
+		(async function*() {
+			yield 1
+			extraYield = true
+			yield 2
+		})(),
+	])) {
+		break
+	}
+	expect(extraYield).toEqual(false)
+})
+
+test("no extra yield after break: async generator, async body", async () => {
+	let extraYield = false
+	for await (const x of merge([
+		(async function*() {
+			yield 1
+			extraYield = true
+			yield 2
+		})(),
+	])) {
+		await new Promise(resolve => setTimeout(resolve, 20))
+		break
+	}
+	expect(extraYield).toEqual(false)
+})
+
+test("no extra yield after break: async generator+promise", async () => {
+	let extraYield = false
+	for await (const x of merge([
+		(async function*() {
+			yield new Promise(resolve => setTimeout(resolve, 20))
+			extraYield = true
+			yield 2
+		})(),
+	])) {
+		break
+	}
+	expect(extraYield).toEqual(false)
+})
+
+test("no extra yield after break: async generator+promise, async body", async () => {
+	let extraYield = false
+	for await (const x of merge([
+		(async function*() {
+			yield new Promise(resolve => setTimeout(resolve, 20))
+			extraYield = true
+			yield 2
+		})(),
+	])) {
+		await new Promise(resolve => setTimeout(resolve, 20))
+		break
+	}
+	expect(extraYield).toEqual(false)
+})
+
+test("throwing error after yield", async () => {
+	const error = new Error()
+	let thrown
+	try {
+		for await (const x of merge([
+			(async function*() {
+				yield 1
+				yield 2
+				throw error
+			})(),
+		])) {
+		}
+	} catch (e) {
+		thrown = e
+	}
+	expect(thrown).toBe(error)
+})
+
+test("early throwing error", async () => {
+	const error = new Error()
+	let thrown
+	try {
+		for await (const x of merge([
+			(async function*() {
+				throw error
+			})(),
+		])) {
+		}
+	} catch (e) {
+		thrown = e
+	}
+	expect(thrown).toBe(error)
+})
+
 test("infinite number of infinite iterators", async () => {
 	let c = 0
 	async function* iterable(n) {
