@@ -1,11 +1,11 @@
 {
-  "name": "@vadzim/name",
+  "name": "@vadzim/module",
   "version": "0.0.1",
   "description": "description",
   "keywords": [],
-  "repository": "https://github.com/vadzim/repository",
+  "repository": "https://github.com/vadzim/module",
   "bugs": {
-    "url": "https://github.com/vadzim/repository/issues"
+    "url": "https://github.com/vadzim/module/issues"
   },
   "contributors": [],
   "main": "distr/module.js",
