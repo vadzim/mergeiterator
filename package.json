@@ -15,10 +15,7 @@
     "prettier": "prettier --write $(cat .prettier) 'source/**/*.js' 'example/**/*.js' '*.js'",
     "prepare": "npm run build",
     "test": "jest",
-    "go": "npm run prettier && npm run build && npm run test",
-    "publishlastonly": "npm publish --access=public && npm run unpublishrecentbutlast",
-    "unpublishrecentbutlast": "for m in $(npm run --silent showrecentpublished); do npm unpublish $m; done",
-    "showrecentpublished": "node -e \"const p=[$(npm view 2>/dev/null)][0];p&&console.log(p.versions.filter(v=>Date.now()-new Date(p.time[v])<24*3600000&&p['dist-tags'].latest!==v).map(v=>p.name+'@'+v).join('\\\\n'))\""
+    "go": "npm run prettier && npm run build && npm run test"
   },
   "license": "MIT",
   "devDependencies": {
