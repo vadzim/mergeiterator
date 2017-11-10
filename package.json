@@ -17,7 +17,8 @@
     "test": "jest",
     "go": "npm run prettier && npm run build && npm run test",
     "publishlastonly": "npm publish --access=public && npm run unpublishrecentbutlast",
-    "unpublishrecentbutlast": "for m in $(node -e \"const p=[$(npm view 2>/dev/null)][0];p&&console.log(p.versions.filter(v=>Date.now()-new Date(p.time[v])<24*3600000&&p['dist-tags'].latest!==v).map(v=>p.name+'@'+v).join('\\n'))\"); do npm unpublish $m; done"
+    "unpublishrecentbutlast": "for m in $(npm run showrecentpublished); do npm unpublish $m; done",
+    "showrecentpublished": "node -e \"const p=[$(npm view 2>/dev/null)][0];p&&console.log(p.versions.filter(v=>Date.now()-new Date(p.time[v])<24*3600000&&p['dist-tags'].latest!==v).map(v=>p.name+'@'+v).join('\\\\n'))\""
   },
   "license": "MIT",
   "devDependencies": {
