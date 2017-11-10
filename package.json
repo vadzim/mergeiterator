@@ -21,15 +21,15 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-idx": "^2.0.0",
+    "babel-plugin-idx": "^2.2.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-stage-0": "^6.24.1",
-    "flow-bin": "^0.57.3",
-    "idx": "^2.1.0",
+    "flow-bin": "^0.59.0",
+    "idx": "^2.2.0",
     "jest": "^21.2.1",
-    "prettier": "^1.7.4"
+    "prettier": "^1.8.2"
   },
   "dependencies": {
     "babel-runtime": "^6.26.0"
