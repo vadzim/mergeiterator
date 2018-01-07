@@ -1,3 +1,3 @@
 # npm module
 
-Npm module boilerplait.
+Npm module boilerplate.
