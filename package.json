@@ -12,28 +12,40 @@
   "author": "Vadzim Zieńka <developer@vadzim.info>",
   "scripts": {
     "build": "flow && (rm distr/*; true) && babel source --out-dir distr && cd distr && (for f in $(find | grep -E '.js$'); do if grep @flow ../source/$f >/dev/null; then cp ../source/$f $f.flow; fi; done) && cd ..",
-    "prettier": "prettier --write $(cat .prettier) 'source/**/*.js' 'example/**/*.js' '*.js'",
+    "prettier": "prettier --write 'source/**/*.js' 'example/**/*.js' '*.js'",
     "prepare": "npm run build",
     "test": "jest",
     "go": "npm run prettier && npm run build && npm run test"
   },
+  "jest": {
+    "transform": {
+      "\\.jsx?$": "babel-7-jest"
+    }
+  },
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.26.0",
+    "@babel/core": "^7.0.0-beta.36",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.36",
+    "@babel/plugin-proposal-decorators": "^7.0.0-beta.36",
+    "@babel/plugin-proposal-export-default-from": "^7.0.0-beta.36",
+    "@babel/plugin-proposal-export-namespace-from": "^7.0.0-beta.36",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0-beta.36",
+    "@babel/plugin-proposal-numeric-separator": "^7.0.0-beta.36",
+    "@babel/plugin-proposal-optional-chaining": "^7.0.0-beta.36",
+    "@babel/plugin-proposal-pipeline-operator": "^7.0.0-beta.36",
+    "@babel/plugin-proposal-throw-expressions": "^7.0.0-beta.36",
+    "@babel/plugin-transform-runtime": "^7.0.0-beta.36",
+    "@babel/preset-env": "^7.0.0-beta.36",
+    "@babel/preset-flow": "^7.0.0-beta.36",
+    "babel-7-jest": "^21.3.2",
     "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-idx": "^2.2.0",
-    "babel-plugin-transform-decorators-legacy": "^1.3.4",
-    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-plugin-transform-strict-mode": "^6.24.1",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-flow": "^6.23.0",
-    "babel-preset-stage-0": "^6.24.1",
     "flow-bin": "^0.63.1",
-    "idx": "^2.2.0",
     "jest": "^22.0.4",
     "prettier": "^1.9.2"
   },
   "dependencies": {
-    "babel-runtime": "^6.26.0"
+    "@babel/cli": "^7.0.0-beta.36",
+    "@babel/runtime": "^7.0.0-beta.36"
   }
 }
