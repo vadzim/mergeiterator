@@ -28,10 +28,10 @@
     "babel-preset-env": "^1.6.1",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-stage-0": "^6.24.1",
-    "flow-bin": "^0.59.0",
+    "flow-bin": "^0.63.1",
     "idx": "^2.2.0",
-    "jest": "^21.2.1",
-    "prettier": "^1.8.2"
+    "jest": "^22.0.4",
+    "prettier": "^1.9.2"
   },
   "dependencies": {
     "babel-runtime": "^6.26.0"
