@@ -31,6 +31,7 @@
     "@babel/plugin-proposal-export-namespace-from": "^7.0.0-beta.36",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0-beta.36",
     "@babel/plugin-proposal-numeric-separator": "^7.0.0-beta.36",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.36",
     "@babel/plugin-proposal-optional-chaining": "^7.0.0-beta.36",
     "@babel/plugin-proposal-pipeline-operator": "^7.0.0-beta.36",
     "@babel/plugin-proposal-throw-expressions": "^7.0.0-beta.36",
@@ -40,6 +41,7 @@
     "babel-7-jest": "^21.3.2",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-strict-mode": "^6.24.1",
+    "babylon": "^7.0.0-beta.36",
     "flow-bin": "^0.63.1",
     "jest": "^22.0.4",
     "prettier": "^1.9.2"

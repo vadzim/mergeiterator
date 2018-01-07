@@ -1,6 +1,8 @@
 module.exports = {
-	useTabs: true,
 	printWidth: 120,
-	trailingComma: "all",
 	semi: false,
+	singleQuote: false,
+	trailingComma: "all",
+	useTabs: true,
+	parser: "./.prettierparser.js",
 }

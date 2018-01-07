@@ -10,6 +10,7 @@ module.exports = {
 		"@babel/plugin-proposal-optional-chaining",
 		"@babel/plugin-proposal-pipeline-operator",
 		"@babel/plugin-proposal-throw-expressions",
+		"@babel/plugin-proposal-object-rest-spread",
 		"@babel/plugin-transform-runtime",
 		"add-module-exports",
 		"transform-strict-mode",

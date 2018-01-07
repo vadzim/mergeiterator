@@ -6,5 +6,5 @@ test("compiling", async () => {
 		f() {}
 	}
 
-	// !(f ?? throw "f")?.x?.[2_345]?.()
+	!(f ?? throw "f")?.x?.[2_345]?.()
 })

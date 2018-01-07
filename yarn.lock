@@ -231,7 +231,7 @@
   dependencies:
     "@babel/plugin-syntax-numeric-separator" "7.0.0-beta.36"
 
-"@babel/plugin-proposal-object-rest-spread@7.0.0-beta.36":
+"@babel/plugin-proposal-object-rest-spread@7.0.0-beta.36", "@babel/plugin-proposal-object-rest-spread@^7.0.0-beta.36":
   version "7.0.0-beta.36"
   resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-object-rest-spread/-/plugin-proposal-object-rest-spread-7.0.0-beta.36.tgz#9712585326ee8b1c0bd069af6583d3511d4bf66f"
   dependencies:
@@ -907,7 +907,7 @@ babel-types@^6.18.0, babel-types@^6.24.1, babel-types@^6.26.0:
     lodash "^4.17.4"
     to-fast-properties "^1.0.3"
 
-babylon@7.0.0-beta.36:
+babylon@7.0.0-beta.36, babylon@^7.0.0-beta.36:
   version "7.0.0-beta.36"
   resolved "https://registry.yarnpkg.com/babylon/-/babylon-7.0.0-beta.36.tgz#3a3683ba6a9a1e02b0aa507c8e63435e39305b9e"
 
