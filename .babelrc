@@ -5,9 +5,11 @@
 		"stage-0",
 	],
 	plugins: [
+		"transform-decorators-legacy",
 		"add-module-exports",
 		"idx",
 		"transform-runtime",
+		"transform-strict-mode",
 	],
 	env: {
 		development: {
