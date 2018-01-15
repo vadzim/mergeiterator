@@ -36,11 +36,3 @@ async function DoIt() {
 If some iterable yields a promise, its value will be yielded, not a promise itself.
 
 If some iterable throws an error, that error will be redirected to a caller and other iterables will be closed.
-
-### Contributing ###
-
-__Please contribute!__
-All contributions are greatly appreciated no matter how small or large the contribution is.
-Whether it's a small grammar fix in the README, a huge bug fix, or just an issue report, you will be recognized as a 'Contributor' to this project.
-
-Please, feel free to [open an issue](https://github.com/vadzim/streamiterator/issues) or email me to developer@vadzim.info if you have any question.
