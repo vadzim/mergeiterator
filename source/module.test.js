@@ -3,8 +3,8 @@ test("compiling", async () => {
 	@f(1)
 	class D {
 		@f(2)
-		f() {}
+		async *f({...p}) {}
 	}
 
-	!(f ?? throw "f")?.x?.[2_345]?.()
+	!(f ?? throw "f")?.x?.[2_345]?.() |> f()
 })

@@ -195,7 +195,7 @@
   version "7.0.0-beta.37"
   resolved "https://registry.yarnpkg.com/@babel/plugin-check-constants/-/plugin-check-constants-7.0.0-beta.37.tgz#dfed9eed66a047f41d900e114b90858888e08222"
 
-"@babel/plugin-proposal-async-generator-functions@7.0.0-beta.37":
+"@babel/plugin-proposal-async-generator-functions@7.0.0-beta.37", "@babel/plugin-proposal-async-generator-functions@^7.0.0-beta.37":
   version "7.0.0-beta.37"
   resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-async-generator-functions/-/plugin-proposal-async-generator-functions-7.0.0-beta.37.tgz#4c1f5635a06c84c6f1c880bb10f23ce4ae6f8d58"
   dependencies:
