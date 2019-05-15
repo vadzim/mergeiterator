@@ -19,7 +19,7 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 	try {
 		while (iteratorsCount > 0) {
 			const dataPresent = new Promise(setOnData)
-			while (readers.length) readers.pop()()
+			while (readers.length) readers.shift()()
 			await dataPresent
 			while (valueGetters.length > 0) yield valueGetters.shift()()
 		}
@@ -30,7 +30,7 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 		mergeDone = true
 		while (iteratorsCount > 0) {
 			const dataPresent = new Promise(setOnData)
-			while (readers.length) readers.pop()()
+			while (readers.length) readers.shift()()
 			await dataPresent
 		}
 		if (normalReturn) while (valueGetters.length > 0) valueGetters.shift()()
