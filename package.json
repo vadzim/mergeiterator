@@ -2,6 +2,43 @@
   "name": "mergeiterator",
   "version": "1.1.9",
   "description": "merges async iterators",
+  "license": "MIT",
+  "repository": "https://github.com/vadzim/mergeiterator",
+  "main": "dist/index.js",
+  "bugs": {
+    "url": "https://github.com/vadzim/mergeiterator/issues"
+  },
+  "author": {
+    "name": "Vadzim Zieńka",
+    "email": "v@vadzim.info",
+    "url": "https://github.com/vadzim"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "test": "jest",
+    "coverage": "npm test -- --coverage --collectCoverageFrom=src/**/*.js",
+    "lint": "eslint .",
+    "flow": "flow check",
+    "flowinstall": "flow-typed install --ignoreDeps=dev",
+    "docs": "documentation --config documentation.yml readme src --section=API",
+    "postdocs": "git add README.md",
+    "clean": "rimraf dist",
+    "flowbuild": "flow-copy-source src dist",
+    "prebuild": "npm run docs && npm run clean && npm run flowbuild",
+    "build": "babel src -d dist",
+    "preversion": "npm run flowinstall && npm run lint && npm test && npm run build",
+    "version": "standard-changelog && git add CHANGELOG.md",
+    "postpublish": "git push origin master --follow-tags",
+    "codecov": "codecov --token=$CODECOV_TOKEN"
+  },
+  "lint-changed": {
+    "*.js": [
+      "eslint --fix"
+    ]
+  },
   "keywords": [
     "merge",
     "iterable",
@@ -9,53 +46,38 @@
     "iterator",
     "AsyncIterator"
   ],
-  "repository": "https://github.com/vadzim/mergeiterator",
-  "bugs": {
-    "url": "https://github.com/vadzim/mergeiterator/issues"
-  },
-  "contributors": [],
-  "main": "distr/mergeiterator.js",
-  "author": "Vadzim Zieńka <developer@vadzim.info>",
-  "scripts": {
-    "build": "flow && (rm distr/*; true) && babel source --out-dir distr && cd distr && (for f in $(find | grep -E '.js$'); do if grep @flow ../source/$f >/dev/null; then cp ../source/$f $f.flow; fi; done) && cd ..",
-    "prettier": "prettier --write 'source/**/*.js' 'example/**/*.js' '*.js'",
-    "prepare": "npm run build",
-    "test": "jest",
-    "go": "npm run prettier && npm run build && npm run test"
-  },
-  "jest": {
-    "transform": {
-      "\\.jsx?$": "babel-7-jest"
-    }
-  },
-  "license": "MIT",
+  "dependencies": {},
+  "peerDependencies": {},
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.37",
-    "@babel/core": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-async-generator-functions": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-decorators": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-export-default-from": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-export-namespace-from": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-numeric-separator": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-optional-chaining": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-pipeline-operator": "^7.0.0-beta.37",
-    "@babel/plugin-proposal-throw-expressions": "^7.0.0-beta.37",
-    "@babel/plugin-transform-runtime": "^7.0.0-beta.37",
-    "@babel/preset-env": "^7.0.0-beta.37",
-    "@babel/preset-flow": "^7.0.0-beta.37",
-    "babel-7-jest": "^21.3.3",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-transform-strict-mode": "^6.24.1",
-    "babylon": "^7.0.0-beta.37",
-    "flow-bin": "^0.63.1",
-    "jest": "^22.1.1",
-    "prettier": "^1.10.2"
-  },
-  "dependencies": {
-    "@babel/runtime": "^7.0.0-beta.37",
-    "define-constants": "^1.0.5"
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.4",
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "@babel/plugin-proposal-decorators": "^7.4.4",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.4.4",
+    "@babel/plugin-proposal-numeric-separator": "^7.2.0",
+    "@babel/plugin-proposal-optional-chaining": "^7.2.0",
+    "@babel/plugin-proposal-pipeline-operator": "^7.3.2",
+    "@babel/preset-env": "^7.4.4",
+    "@babel/preset-flow": "^7.0.0",
+    "babel-eslint": "^10.0.1",
+    "babel-jest": "^24.8.0",
+    "babel-plugin-add-module-exports": "^1.0.2",
+    "codecov": "^3.5.0",
+    "documentation": "^11.0.0",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^4.2.0",
+    "eslint-plugin-flowtype": "^3.8.2",
+    "eslint-plugin-flowtype-errors": "^4.1.0",
+    "eslint-plugin-import": "^2.17.2",
+    "eslint-plugin-prettier": "^3.1.0",
+    "flow-bin": "^0.98.1",
+    "flow-copy-source": "^2.0.6",
+    "flow-typed": "^2.5.2",
+    "jest": "^24.8.0",
+    "lint-changed": "0.0.0-development",
+    "prettier": "^1.17.1",
+    "rimraf": "^2.6.3",
+    "standard-changelog": "^2.0.11"
   }
 }

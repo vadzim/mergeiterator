@@ -1,4 +1,6 @@
-import merge from "../source/mergeiterator"
+// @flow
+
+import merge from "../src/index.js"
 
 async function DoIt() {
 	for await (const v of merge([

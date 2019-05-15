@@ -1,0 +1,35 @@
+{
+  "parser": "babel-eslint",
+  "extends": [
+    "airbnb-base",
+    "plugin:flowtype/recommended",
+    "plugin:prettier/recommended",
+    "prettier/flowtype",
+  ],
+  "plugins": [
+    "flowtype",
+    "flowtype-errors",
+  ],
+  "env": {
+    "jest": true,
+  },
+  "rules": {
+    "flowtype-errors/show-errors": "error",
+    "no-restricted-syntax": [
+      "error",
+      "WithStatement",
+      "LabeledStatement",
+      "ForInStatement",
+    ],
+    "no-await-in-loop": "off",
+    "no-return-await": "off",
+    "import/no-default-export": "error",
+    "import/prefer-default-export": "off",
+    "func-names": "off",
+    "no-void": "off",
+    "no-plusplus": "off",
+    "require-yield": "off",
+    "no-use-before-define": "off",
+    "import/extensions": ["error", "always"],
+  }
+}
