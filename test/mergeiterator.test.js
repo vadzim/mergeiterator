@@ -33,11 +33,11 @@ describe("mergeiterator", () => {
 			const done = new Deferred()
 			const it = merge([
 				[1, 2, 2],
-				repeat(3, 5, 33),
-				repeat(5, Infinity, 55, done.resolve),
+				repeat(3, 5, 333),
+				repeat(5, Infinity, 555, done.resolve),
 				[
-					sleep(77).then(() => 7),
-					sleep(177).then(() => {
+					sleep(777).then(() => 7),
+					sleep(1777).then(() => {
 						// eslint-disable-next-line no-throw-literal
 						throw 10
 					}),
@@ -48,14 +48,14 @@ describe("mergeiterator", () => {
 			expect(await it.next()).toEqual({ value: 3, done: false }) // 0 #3.1
 			expect(await it.next()).toEqual({ value: 2, done: false }) // 0
 			expect(await it.next()).toEqual({ value: 5, done: false }) // 0 #5.1
-			expect(await it.next()).toEqual({ value: 3, done: false }) // 33 #3.2
-			expect(await it.next()).toEqual({ value: 5, done: false }) // 55 #5.2
-			expect(await it.next()).toEqual({ value: 3, done: false }) // 66 #3.3
-			expect(await it.next()).toEqual({ value: 7, done: false }) // 77
-			expect(await it.next()).toEqual({ value: 3, done: false }) // 99 #3.4
-			expect(await it.next()).toEqual({ value: 5, done: false }) // 110 #5.3
-			expect(await it.next()).toEqual({ value: 3, done: false }) // 132 #3.5
-			expect(await it.next()).toEqual({ value: 5, done: false }) // 165 #5.4
+			expect(await it.next()).toEqual({ value: 3, done: false }) // 333 #3.2
+			expect(await it.next()).toEqual({ value: 5, done: false }) // 555 #5.2
+			expect(await it.next()).toEqual({ value: 3, done: false }) // 666 #3.3
+			expect(await it.next()).toEqual({ value: 7, done: false }) // 777
+			expect(await it.next()).toEqual({ value: 3, done: false }) // 999 #3.4
+			expect(await it.next()).toEqual({ value: 5, done: false }) // 1110 #5.3
+			expect(await it.next()).toEqual({ value: 3, done: false }) // 1332 #3.5
+			expect(await it.next()).toEqual({ value: 5, done: false }) // 1665 #5.4
 			expect(await it.next().then(result => ({ result }), error => error)).toEqual(10) // 177
 			expect(await it.next()).toEqual({ value: undefined, done: true })
 			expect(await it.next()).toEqual({ value: undefined, done: true })
