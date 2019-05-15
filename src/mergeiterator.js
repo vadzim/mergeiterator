@@ -1,5 +1,7 @@
 // @flow
 
+import "./symbolAsyncIterator.js"
+
 type AnyIterable<T> = AsyncIterable<T> | Iterable<T>
 
 /**
