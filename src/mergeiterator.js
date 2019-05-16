@@ -8,13 +8,14 @@ type AnyIterable<T> = AsyncIterable<T> | Iterable<T>
  * Merges async or sync iterables into async one.
  */
 export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | T>>): AsyncIterator<T> {
-	const sequenceIterator = getIterator(sequences)
-	const readers = [nextMainSeq]
+	const rootIterator = getIterator(sequences)
+	const readers = [readRootIterator]
 	const valueGetters = []
 	let iteratorsCount = 1
 	let mergeDone = false
 	let onData
 	let normalReturn = true
+	let rootReturnResult
 
 	try {
 		while (iteratorsCount > 0) {
@@ -33,9 +34,18 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 			while (readers.length) readers.shift()()
 			await dataPresent
 		}
-		// Raise possible exceptions on iterators interruption. Do not raise if there already has been raised one.
-		if (normalReturn) while (valueGetters.length > 0) valueGetters.shift()()
+		// Do not hide an exception if it's been already raised.
+		if (normalReturn) {
+			// Raise possible exceptions on iterators interruption.
+			while (valueGetters.length > 0) valueGetters.shift()()
+			// There is no chance to return a value out of finally block if .return() is called.
+			// eslint-disable-next-line no-unsafe-finally
+			return rootReturnResult
+		}
 	}
+
+	// istanbul ignore next
+	throw new Error("impossible")
 
 	function setOnData(resolve) {
 		onData = resolve
@@ -55,19 +65,34 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 		onData()
 	}
 
-	function nextMainSeq() {
+	function stopRootIterator() {
+		stopIterator(rootIterator).then(
+			({ done, value }) => {
+				if (done) rootReturnResult = value
+				iteratorStopped()
+			},
+			error => throwError(error),
+		)
+	}
+
+	function stopChildIterator(iterator) {
+		stopIterator(iterator).then(() => iteratorStopped(), error => throwError(error))
+	}
+
+	function readRootIterator() {
 		if (mergeDone) {
-			stopIterator(sequenceIterator).then(() => iteratorStopped(), error => throwError(error))
+			stopRootIterator()
 			return
 		}
-		readIterator(sequenceIterator).then(
+		readIterator(rootIterator).then(
 			({ done, value }) => {
 				if (done) {
+					rootReturnResult = value
 					iteratorStopped()
 					return
 				}
 				if (mergeDone) {
-					stopIterator(sequenceIterator).then(() => iteratorStopped(), error => throwError(error))
+					stopRootIterator()
 					return
 				}
 				let iterator
@@ -75,22 +100,22 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 					iterator = getIterator(value)
 				} catch (e) {
 					throwError(e)
-					stopIterator(sequenceIterator).then(() => iteratorStopped(), error => throwError(error))
+					stopRootIterator()
 					return
 				}
 				iteratorsCount++
-				readers.push(next(iterator))
-				readers.push(nextMainSeq)
+				readers.push(getChildReader(iterator))
+				readers.push(readRootIterator)
 				onData()
 			},
 			error => throwError(error),
 		)
 	}
 
-	function next(iterator) {
-		return function nextSeq() {
+	function getChildReader(iterator) {
+		return function readChildIterator() {
 			if (mergeDone) {
-				stopIterator(iterator).then(() => iteratorStopped(), error => throwError(error))
+				stopChildIterator(iterator)
 				return
 			}
 			readIterator(iterator).then(
@@ -100,9 +125,10 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 						return
 					}
 					if (mergeDone) {
-						stopIterator(iterator).then(() => iteratorStopped(), error => throwError(error))
+						stopChildIterator(iterator)
+						return
 					}
-					readers.push(nextSeq)
+					readers.push(readChildIterator)
 					valueGetters.push(() => (value: any))
 					onData()
 				},
