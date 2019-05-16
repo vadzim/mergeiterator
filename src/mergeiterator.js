@@ -107,8 +107,8 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 					if (mergeDone) {
 						stopIterator(iterator).then(() => iteratorStopped(), error => throwError(error))
 					}
-					sendValue((value: any))
 					readers.push(nextSeq)
+					sendValue((value: any))
 				},
 				error => throwError(error),
 			)
