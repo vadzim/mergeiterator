@@ -6,41 +6,41 @@ Merges async iterators.
 [![Build Status](https://img.shields.io/travis/vadzim/mergeiterator/master.svg?style=flat-square)](https://travis-ci.org/vadzim/mergeiterator)
 [![Coverage Status](https://img.shields.io/codecov/c/github/vadzim/mergeiterator/master.svg?style=flat-square)](https://codecov.io/gh/vadzim/mergeiterator/branch/master)
 
-### Using
+Merges list of async or sync iterables into async one.
 
-This utility is for merging together async iterators.
-
-```js
-merge(collection_of_iterables): Iterable
-```
-
-Pass it a collection of iterables and it'll return an [async iterator](https://github.com/tc39/proposal-async-iteration), which will contain all values from those iterables. Those iterables and the collection of them can be arrays, calls to generators, or any other kind of iterable, synchronous or async, finite or infinite.
+It accepts any iterable like arrays, generators, async generators or even promises which resolve to iterables.
+Any iterator can be infinite, including the list of iterables itself.
 
 ```javascript
 import merge from "mergeiterator"
 
 async function DoIt() {
-	const array = [1,2,3]
+	const array = [1, 2, 3, 4, 5]
+	const promisedArray = Promise.resolve([6, Promise.resolve(7)])
 	function *generator() {
-		let i = 6
+		let i = 10
 		while (true) yield (i++)
-	})
+	}
 	async function *asyncGenerator() {
-		yield await Promise.resolve(4)
-		yield Promise.resolve(5)
-	})
-	for await (const v of merge([array, generator(), asyncGenerator()])) {
+		yield 8
+		yield Promise.resolve(9)
+	}
+	for await (const v of merge([array, promisedArray, generator(), asyncGenerator()])) {
 		console.log(v)
 	}
 }
-// 1 6 2 7 4 3 8 5 9 10 11 ...
+
+// 1 2 6 3 7 10 4 11 8 5 12 9 13 14 15 ...
 ```
 
-`mergeIterator` function guarantees, that if some value is yielded by some of iterables that `mergeIterator` is passed, then that value will be eventually yielded by `mergeIterator`. It also guarantees that the order of values within the same iterable is preserved.
+This function guarantees, that if some value is yielded by some of iterables, then that value will be eventually yielded. This is basically about infinite iterables.
+It also guarantees that the order of values within the same iterable is preserved.
 
-If some iterable yields a promise, its value will be yielded, not a promise itself.
+If some iterable yields a promise, its value will be used, not a promise itself.
 
 If some iterable throws an error, that error will be redirected to a caller and other iterables will be closed.
+
+The return value of `merge` is the return value of the list of iterables. Return values of merged iterables are discarded.
 
 ## API
 
@@ -57,6 +57,6 @@ Merges async or sync iterables into async one.
 
 #### Parameters
 
--   `sequences` **AnyIterable&lt;AnyIterable&lt;([Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;Yield> | Yield), any>, Return>** 
+-   `sequences` **AnyIterable&lt;AnyIterable&lt;([Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;T> | T)>, ReturnT>** 
 
-Returns **$AsyncIterator&lt;Yield, Return, void>** 
+Returns **AsyncGenerator&lt;T, ReturnT, void>** 
