@@ -33,6 +33,7 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 			while (readers.length) readers.shift()()
 			await dataPresent
 		}
+		// Raise possible exceptions on iterators interruption. Do not raise if there already has been raised one.
 		if (normalReturn) while (valueGetters.length > 0) valueGetters.shift()()
 	}
 
