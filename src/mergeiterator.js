@@ -41,11 +41,6 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 		onData = resolve
 	}
 
-	function sendValue(value: T) {
-		valueGetters.push(() => value)
-		onData()
-	}
-
 	function throwError(error) {
 		iteratorsCount--
 		valueGetters.push(() => {
@@ -108,7 +103,8 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 						stopIterator(iterator).then(() => iteratorStopped(), error => throwError(error))
 					}
 					readers.push(nextSeq)
-					sendValue((value: any))
+					valueGetters.push(() => (value: any))
+					onData()
 				},
 				error => throwError(error),
 			)
