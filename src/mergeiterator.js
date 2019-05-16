@@ -2,16 +2,18 @@
 
 import "./symbolAsyncIterator.js"
 
-type AnyIterable<T> = AsyncIterable<T> | Iterable<T>
+type AnyIterable<Yield, Return> = $AsyncIterable<Yield, Return, void> | $Iterable<Yield, Return, void>
 
 /**
  * Merges async or sync iterables into async one.
  */
-export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | T>>): AsyncIterator<T> {
+export async function* merge<Yield, Return>(
+	sequences: AnyIterable<AnyIterable<Promise<Yield> | Yield, *>, Return>,
+): $AsyncIterator<Yield, Return, void> {
 	const rootIterator = getIterator(sequences)
 	const readers = [readRootIterator]
 	const valueGetters = []
-	let iteratorsCount = 1
+	let iteratorsCount = 1 // There is only rootIterator opened so far.
 	let mergeDone = false
 	let onData
 	let normalReturn = true
@@ -40,7 +42,7 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<Promise<T> | 
 			while (valueGetters.length > 0) valueGetters.shift()()
 			// There is no chance to return a value out of finally block if .return() is called.
 			// eslint-disable-next-line no-unsafe-finally
-			return rootReturnResult
+			return (rootReturnResult: any)
 		}
 	}
 
@@ -143,7 +145,7 @@ const getIterator = (iterable: any): any => {
 	if (method) return (method.call(iterable): any)
 	if (typeof iterable.next === "function") return iterable
 	// eslint-disable-next-line no-unused-vars
-	for (const x of iterable) {
+	for (/* should throw here */ const x of iterable) {
 		// istanbul ignore next
 		throw new Error("impossible")
 	}

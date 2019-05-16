@@ -63,7 +63,72 @@ describe("mergeiterator", () => {
 		})
 	})
 
+	describe("reading ahead", () => {
+		test("test", async () => {
+			const done = new Deferred()
+			const it = merge([
+				[1, 2, 2],
+				repeat(3, 5, 333),
+				repeat(5, Infinity, 555, done.resolve),
+				[
+					sleep(777).then(() => 7),
+					sleep(1777).then(() => {
+						// eslint-disable-next-line no-throw-literal
+						throw 10
+					}),
+				],
+			])
+			const v = []
+			for (let i = 0; i < 16; ++i) {
+				v[i] = it.next()
+			}
+			expect(await v.shift()).toEqual({ value: 1, done: false }) // 0ms
+			expect(await v.shift()).toEqual({ value: 2, done: false }) // 0
+			expect(await v.shift()).toEqual({ value: 3, done: false }) // 0 #3.1
+			expect(await v.shift()).toEqual({ value: 2, done: false }) // 0
+			expect(await v.shift()).toEqual({ value: 5, done: false }) // 0 #5.1
+			expect(await v.shift()).toEqual({ value: 3, done: false }) // 333 #3.2
+			expect(await v.shift()).toEqual({ value: 5, done: false }) // 555 #5.2
+			expect(await v.shift()).toEqual({ value: 3, done: false }) // 666 #3.3
+			expect(await v.shift()).toEqual({ value: 7, done: false }) // 777
+			expect(await v.shift()).toEqual({ value: 3, done: false }) // 999 #3.4
+			expect(await v.shift()).toEqual({ value: 5, done: false }) // 1110 #5.3
+			expect(await v.shift()).toEqual({ value: 3, done: false }) // 1332 #3.5
+			expect(await v.shift()).toEqual({ value: 5, done: false }) // 1665 #5.4
+			expect(await v.shift().then(result => ({ result }), error => error)).toEqual(10) // 177
+			expect(await v.shift()).toEqual({ value: undefined, done: true })
+			expect(await v.shift()).toEqual({ value: undefined, done: true })
+			await done.promise
+		})
+	})
+
 	describe("test functionality", () => {
+		test("return result", async () => {
+			const it = merge(
+				(function*() {
+					yield (function*() {
+						return 17
+					})()
+					yield []
+					yield [13]
+					yield []
+					yield []
+					return 42
+				})(),
+			)
+			expect(await it.next()).toEqual({ done: false, value: 13 })
+			expect(await it.next()).toEqual({ done: true, value: 42 })
+		})
+
+		test("merges empty list", async () => {
+			expect(await merge([]).next()).toEqual({ done: true, value: undefined })
+		})
+
+		test("merges list of empties", async () => {
+			// eslint-disable-next-line no-empty-function
+			expect(await merge([[], [], [], (function*() {})(), (async function*() {})(), [], [], []]).next()).toEqual({ done: true, value: undefined })
+		})
+
 		test("rethrow sync", async () => {
 			const it = merge(
 				(function*() {
@@ -94,43 +159,6 @@ describe("mergeiterator", () => {
 		test("throw on non-iterable on top level", async () => {
 			const it = merge((0: any))
 			expect(await it.next().then(() => Promise.reject(), error => error)).toBeInstanceOf(TypeError)
-		})
-
-		test("reading ahead", async () => {
-			const done = new Deferred()
-			const it = merge([
-				[1, 2, 2],
-				repeat(3, 5, 33),
-				repeat(5, Infinity, 55, done.resolve),
-				[
-					sleep(77).then(() => 7),
-					sleep(177).then(() => {
-						// eslint-disable-next-line no-throw-literal
-						throw 10
-					}),
-				],
-			])
-			const v = []
-			for (let i = 0; i < 16; ++i) {
-				v[i] = it.next()
-			}
-			expect(await v.shift()).toEqual({ value: 1, done: false }) // 0ms
-			expect(await v.shift()).toEqual({ value: 2, done: false }) // 0
-			expect(await v.shift()).toEqual({ value: 3, done: false }) // 0 #3.1
-			expect(await v.shift()).toEqual({ value: 2, done: false }) // 0
-			expect(await v.shift()).toEqual({ value: 5, done: false }) // 0 #5.1
-			expect(await v.shift()).toEqual({ value: 3, done: false }) // 33 #3.2
-			expect(await v.shift()).toEqual({ value: 5, done: false }) // 55 #5.2
-			expect(await v.shift()).toEqual({ value: 3, done: false }) // 66 #3.3
-			expect(await v.shift()).toEqual({ value: 7, done: false }) // 77
-			expect(await v.shift()).toEqual({ value: 3, done: false }) // 99 #3.4
-			expect(await v.shift()).toEqual({ value: 5, done: false }) // 110 #5.3
-			expect(await v.shift()).toEqual({ value: 3, done: false }) // 132 #3.5
-			expect(await v.shift()).toEqual({ value: 5, done: false }) // 165 #5.4
-			expect(await v.shift().then(result => ({ result }), error => error)).toEqual(10) // 177
-			expect(await v.shift()).toEqual({ value: undefined, done: true })
-			expect(await v.shift()).toEqual({ value: undefined, done: true })
-			await done.promise
 		})
 
 		test("no extra yield after break: sync generator", async () => {
