@@ -2,12 +2,12 @@
 
 import "./symbolAsyncIterator.js"
 
-type AnyIterable<T, ReturnT = *> = $AsyncIterable<T, ReturnT, void> | $Iterable<T, ReturnT, void>
+type AnyIterable<T, ReturnT = *> = $AsyncIterable<Promise<T> | T, ReturnT, void> | $Iterable<Promise<T> | T, ReturnT, void>
 
 /**
  * Merges async or sync iterables into async one.
  */
-export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<Promise<T> | T>, ReturnT>): AsyncGenerator<T, ReturnT, void> {
+export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, ReturnT>): AsyncGenerator<T, ReturnT, void> {
 	const rootIterator = getIterator(sequences)
 	const readers = [readRootIterator]
 	const valueGetters = []

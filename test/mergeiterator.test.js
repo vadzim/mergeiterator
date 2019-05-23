@@ -32,7 +32,7 @@ describe("mergeiterator", () => {
 		test("test", async () => {
 			const done = new Deferred()
 			const it = merge([
-				[1, 2, 2],
+				Promise.resolve([1, Promise.resolve(2), 2]),
 				repeat(3, 5, 333),
 				repeat(5, Infinity, 555, done.resolve),
 				[
@@ -60,6 +60,12 @@ describe("mergeiterator", () => {
 			expect(await it.next()).toEqual({ value: undefined, done: true })
 			expect(await it.next()).toEqual({ value: undefined, done: true })
 			await done.promise
+
+			// test types
+			for await (const x: number of it) {
+				// should not run
+				expect(x).toBe(undefined)
+			}
 		})
 	})
 
