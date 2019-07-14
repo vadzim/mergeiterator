@@ -1,6 +1,6 @@
 {
   "name": "mergeiterator",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "merges async iterators",
   "license": "MIT",
   "repository": "https://github.com/vadzim/mergeiterator",
