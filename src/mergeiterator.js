@@ -13,15 +13,15 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 	const valueGetters = []
 	let iteratorsCount = 1 // There is only rootIterator opened so far.
 	let mergeDone = false
-	let onDataPresent
+	let onStateChanged
 	let normalReturn = true
 	let rootReturnResult
 
 	try {
 		while (iteratorsCount > 0) {
-			const dataPresent = new Promise(setOnDataPresent)
+			const stateChanged = new Promise(setOnStateChanged)
 			while (readers.length) readers.shift()()
-			await dataPresent
+			await stateChanged
 			while (valueGetters.length > 0) yield valueGetters.shift()()
 		}
 	} catch (e) {
@@ -30,9 +30,9 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 	} finally {
 		mergeDone = true
 		while (iteratorsCount > 0) {
-			const dataPresent = new Promise(setOnDataPresent)
+			const stateChanged = new Promise(setOnStateChanged)
 			while (readers.length) readers.shift()()
-			await dataPresent
+			await stateChanged
 		}
 		// Do not hide an exception if it's been already raised.
 		if (normalReturn) {
@@ -47,8 +47,8 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 	// istanbul ignore next
 	throw new Error("impossible")
 
-	function setOnDataPresent(resolve) {
-		onDataPresent = resolve
+	function setOnStateChanged(resolve) {
+		onStateChanged = resolve
 	}
 
 	function throwError(error) {
@@ -57,12 +57,12 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 			throw error
 		})
 		mergeDone = true
-		onDataPresent()
+		onStateChanged()
 	}
 
 	function iteratorStopped() {
 		iteratorsCount--
-		onDataPresent()
+		onStateChanged()
 	}
 
 	function stopRootIterator() {
@@ -106,7 +106,7 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 				iteratorsCount++
 				readers.push(getChildReader(iterator))
 				readers.push(readRootIterator)
-				onDataPresent()
+				onStateChanged()
 			},
 			error => throwError(error),
 		)
@@ -130,7 +130,7 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 					}
 					readers.push(readChildIterator)
 					valueGetters.push(() => (value: any))
-					onDataPresent()
+					onStateChanged()
 				},
 				error => throwError(error),
 			)
