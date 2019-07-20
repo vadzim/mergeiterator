@@ -9,7 +9,7 @@ type AnyIterable<T, ReturnT = *> = $AsyncIterable<Promise<T> | T, ReturnT, void>
  */
 export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, ReturnT>): AsyncGenerator<T, ReturnT, void> {
 	const rootIterator = getIterator(sequences)
-	const readers = [readRootIterator]
+	const ticks = [readRootIterator]
 	const valueGetters = []
 	let iteratorsCount = 1 // There is only rootIterator opened so far.
 	let mergeDone = false
@@ -20,7 +20,7 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 	try {
 		while (iteratorsCount > 0) {
 			const stateChanged = new Promise(setOnStateChanged)
-			while (readers.length) readers.shift()()
+			while (ticks.length) ticks.shift()()
 			await stateChanged
 			while (valueGetters.length > 0) yield valueGetters.shift()()
 		}
@@ -31,7 +31,7 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 		mergeDone = true
 		while (iteratorsCount > 0) {
 			const stateChanged = new Promise(setOnStateChanged)
-			while (readers.length) readers.shift()()
+			while (ticks.length) ticks.shift()()
 			await stateChanged
 		}
 		// Do not hide an exception if it's been already raised.
@@ -104,8 +104,8 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 					return
 				}
 				iteratorsCount++
-				readers.push(getChildReader(iterator))
-				readers.push(readRootIterator)
+				ticks.push(getChildReader(iterator))
+				ticks.push(readRootIterator)
 				onStateChanged()
 			},
 			error => throwError(error),
@@ -128,7 +128,7 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 						stopChildIterator(iterator)
 						return
 					}
-					readers.push(readChildIterator)
+					ticks.push(readChildIterator)
 					valueGetters.push(() => (value: any))
 					onStateChanged()
 				},
