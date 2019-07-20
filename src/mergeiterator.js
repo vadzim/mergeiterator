@@ -13,13 +13,13 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 	const valueGetters = []
 	let iteratorsCount = 1 // There is only rootIterator opened so far.
 	let mergeDone = false
-	let onData
+	let onDataPresent
 	let normalReturn = true
 	let rootReturnResult
 
 	try {
 		while (iteratorsCount > 0) {
-			const dataPresent = new Promise(setOnData)
+			const dataPresent = new Promise(setOnDataPresent)
 			while (readers.length) readers.shift()()
 			await dataPresent
 			while (valueGetters.length > 0) yield valueGetters.shift()()
@@ -30,7 +30,7 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 	} finally {
 		mergeDone = true
 		while (iteratorsCount > 0) {
-			const dataPresent = new Promise(setOnData)
+			const dataPresent = new Promise(setOnDataPresent)
 			while (readers.length) readers.shift()()
 			await dataPresent
 		}
@@ -47,8 +47,8 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 	// istanbul ignore next
 	throw new Error("impossible")
 
-	function setOnData(resolve) {
-		onData = resolve
+	function setOnDataPresent(resolve) {
+		onDataPresent = resolve
 	}
 
 	function throwError(error) {
@@ -57,12 +57,12 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 			throw error
 		})
 		mergeDone = true
-		onData()
+		onDataPresent()
 	}
 
 	function iteratorStopped() {
 		iteratorsCount--
-		onData()
+		onDataPresent()
 	}
 
 	function stopRootIterator() {
@@ -106,7 +106,7 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 				iteratorsCount++
 				readers.push(getChildReader(iterator))
 				readers.push(readRootIterator)
-				onData()
+				onDataPresent()
 			},
 			error => throwError(error),
 		)
@@ -130,7 +130,7 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 					}
 					readers.push(readChildIterator)
 					valueGetters.push(() => (value: any))
-					onData()
+					onDataPresent()
 				},
 				error => throwError(error),
 			)
