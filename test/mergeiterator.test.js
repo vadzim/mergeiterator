@@ -30,94 +30,90 @@ async function* repeat(value, count = Infinity, interval = 0, onDone = undefined
 describe("mergeiterator", () => {
 	test("example does not fail", () => import("../example/example.js"))
 
-	describe("test time intervals", () => {
-		test("test", async () => {
-			const done = new Deferred()
-			const it = merge([
-				Promise.resolve([1, Promise.resolve(2), 2]),
-				repeat(3, 5, 333),
-				repeat(5, Infinity, 555, done.resolve),
-				[
-					sleep(777).then(() => 7),
-					sleep(1777).then(() => {
-						// eslint-disable-next-line no-throw-literal
-						throw 10
-					}),
-				],
-			])
-			expect(await it.next()).toEqual({ value: 1, done: false }) // 0ms
-			expect(await it.next()).toEqual({ value: 2, done: false }) // 0
-			expect(await it.next()).toEqual({ value: 3, done: false }) // 0 #3.1
-			expect(await it.next()).toEqual({ value: 2, done: false }) // 0
-			expect(await it.next()).toEqual({ value: 5, done: false }) // 0 #5.1
-			expect(await it.next()).toEqual({ value: 3, done: false }) // 333 #3.2
-			expect(await it.next()).toEqual({ value: 5, done: false }) // 555 #5.2
-			expect(await it.next()).toEqual({ value: 3, done: false }) // 666 #3.3
-			expect(await it.next()).toEqual({ value: 7, done: false }) // 777
-			expect(await it.next()).toEqual({ value: 3, done: false }) // 999 #3.4
-			expect(await it.next()).toEqual({ value: 5, done: false }) // 1110 #5.3
-			expect(await it.next()).toEqual({ value: 3, done: false }) // 1332 #3.5
-			expect(await it.next()).toEqual({ value: 5, done: false }) // 1665 #5.4
-			expect(
-				await it.next().then(
-					result => ({ result }),
-					error => error,
-				),
-			).toEqual(10) // 177
-			expect(await it.next()).toEqual({ value: undefined, done: true })
-			expect(await it.next()).toEqual({ value: undefined, done: true })
-			await done.promise
+	test("test time intervals", async () => {
+		const done = new Deferred()
+		const it = merge([
+			Promise.resolve([1, Promise.resolve(2), 2]),
+			repeat(3, 5, 333),
+			repeat(5, Infinity, 555, done.resolve),
+			[
+				sleep(777).then(() => 7),
+				sleep(1777).then(() => {
+					// eslint-disable-next-line no-throw-literal
+					throw 10
+				}),
+			],
+		])
+		expect(await it.next()).toEqual({ value: 1, done: false }) // 0ms
+		expect(await it.next()).toEqual({ value: 2, done: false }) // 0
+		expect(await it.next()).toEqual({ value: 3, done: false }) // 0 #3.1
+		expect(await it.next()).toEqual({ value: 2, done: false }) // 0
+		expect(await it.next()).toEqual({ value: 5, done: false }) // 0 #5.1
+		expect(await it.next()).toEqual({ value: 3, done: false }) // 333 #3.2
+		expect(await it.next()).toEqual({ value: 5, done: false }) // 555 #5.2
+		expect(await it.next()).toEqual({ value: 3, done: false }) // 666 #3.3
+		expect(await it.next()).toEqual({ value: 7, done: false }) // 777
+		expect(await it.next()).toEqual({ value: 3, done: false }) // 999 #3.4
+		expect(await it.next()).toEqual({ value: 5, done: false }) // 1110 #5.3
+		expect(await it.next()).toEqual({ value: 3, done: false }) // 1332 #3.5
+		expect(await it.next()).toEqual({ value: 5, done: false }) // 1665 #5.4
+		expect(
+			await it.next().then(
+				result => ({ result }),
+				error => error,
+			),
+		).toEqual(10) // 177
+		expect(await it.next()).toEqual({ value: undefined, done: true })
+		expect(await it.next()).toEqual({ value: undefined, done: true })
+		await done.promise
 
-			// test types
-			for await (const x: number of it) {
-				// should not run
-				expect(x).toBe(undefined)
-			}
-		})
+		// test types
+		for await (const x: number of it) {
+			// should not run
+			expect(x).toBe(undefined)
+		}
 	})
 
-	describe("reading ahead", () => {
-		test("test", async () => {
-			const done = new Deferred()
-			const it = merge([
-				[1, 2, 2],
-				repeat(3, 5, 333),
-				repeat(5, Infinity, 555, done.resolve),
-				[
-					sleep(777).then(() => 7),
-					sleep(1777).then(() => {
-						// eslint-disable-next-line no-throw-literal
-						throw 10
-					}),
-				],
-			])
-			const v = []
-			for (let i = 0; i < 16; ++i) {
-				v[i] = it.next()
-			}
-			expect(await v.shift()).toEqual({ value: 1, done: false }) // 0ms
-			expect(await v.shift()).toEqual({ value: 2, done: false }) // 0
-			expect(await v.shift()).toEqual({ value: 3, done: false }) // 0 #3.1
-			expect(await v.shift()).toEqual({ value: 2, done: false }) // 0
-			expect(await v.shift()).toEqual({ value: 5, done: false }) // 0 #5.1
-			expect(await v.shift()).toEqual({ value: 3, done: false }) // 333 #3.2
-			expect(await v.shift()).toEqual({ value: 5, done: false }) // 555 #5.2
-			expect(await v.shift()).toEqual({ value: 3, done: false }) // 666 #3.3
-			expect(await v.shift()).toEqual({ value: 7, done: false }) // 777
-			expect(await v.shift()).toEqual({ value: 3, done: false }) // 999 #3.4
-			expect(await v.shift()).toEqual({ value: 5, done: false }) // 1110 #5.3
-			expect(await v.shift()).toEqual({ value: 3, done: false }) // 1332 #3.5
-			expect(await v.shift()).toEqual({ value: 5, done: false }) // 1665 #5.4
-			expect(
-				await v.shift().then(
-					result => ({ result }),
-					error => error,
-				),
-			).toEqual(10) // 177
-			expect(await v.shift()).toEqual({ value: undefined, done: true })
-			expect(await v.shift()).toEqual({ value: undefined, done: true })
-			await done.promise
-		})
+	test("reading ahead", async () => {
+		const done = new Deferred()
+		const it = merge([
+			[1, 2, 2],
+			repeat(3, 5, 333),
+			repeat(5, Infinity, 555, done.resolve),
+			[
+				sleep(777).then(() => 7),
+				sleep(1777).then(() => {
+					// eslint-disable-next-line no-throw-literal
+					throw 10
+				}),
+			],
+		])
+		const v = []
+		for (let i = 0; i < 16; ++i) {
+			v[i] = it.next()
+		}
+		expect(await v.shift()).toEqual({ value: 1, done: false }) // 0ms
+		expect(await v.shift()).toEqual({ value: 2, done: false }) // 0
+		expect(await v.shift()).toEqual({ value: 3, done: false }) // 0 #3.1
+		expect(await v.shift()).toEqual({ value: 2, done: false }) // 0
+		expect(await v.shift()).toEqual({ value: 5, done: false }) // 0 #5.1
+		expect(await v.shift()).toEqual({ value: 3, done: false }) // 333 #3.2
+		expect(await v.shift()).toEqual({ value: 5, done: false }) // 555 #5.2
+		expect(await v.shift()).toEqual({ value: 3, done: false }) // 666 #3.3
+		expect(await v.shift()).toEqual({ value: 7, done: false }) // 777
+		expect(await v.shift()).toEqual({ value: 3, done: false }) // 999 #3.4
+		expect(await v.shift()).toEqual({ value: 5, done: false }) // 1110 #5.3
+		expect(await v.shift()).toEqual({ value: 3, done: false }) // 1332 #3.5
+		expect(await v.shift()).toEqual({ value: 5, done: false }) // 1665 #5.4
+		expect(
+			await v.shift().then(
+				result => ({ result }),
+				error => error,
+			),
+		).toEqual(10) // 177
+		expect(await v.shift()).toEqual({ value: undefined, done: true })
+		expect(await v.shift()).toEqual({ value: undefined, done: true })
+		await done.promise
 	})
 
 	describe("test functionality", () => {
