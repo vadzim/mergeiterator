@@ -30,7 +30,6 @@
     "prebuild": "npm run docs && npm run clean && npm run flowbuild",
     "build": "babel src -d dist",
     "preversion": "npm run flowinstall && npm run lint && npm test && npm run build",
-    "version": "standard-changelog && git add CHANGELOG.md",
     "postpublish": "git push origin master --follow-tags",
     "codecov": "codecov --token=$CODECOV_TOKEN"
   },
@@ -76,7 +75,6 @@
     "jest": "^24.9.0",
     "lint-changed": "0.0.0-development",
     "prettier": "^1.19.1",
-    "rimraf": "^3.0.0",
-    "standard-changelog": "^2.0.21"
+    "rimraf": "^3.0.0"
   }
 }
