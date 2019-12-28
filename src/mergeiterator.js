@@ -2,8 +2,6 @@
 
 import { type AnyIterable } from "type-any-iterable"
 
-import "./symbolAsyncIterator.js"
-
 /**
  * Merges async or sync iterables into async one.
  */
