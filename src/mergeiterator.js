@@ -1,9 +1,8 @@
 // @flow
 
-import "./symbolAsyncIterator.js"
+import { type AnyIterable } from "type-any-iterable"
 
-type AsyncValue<T> = Promise<T> | T
-type AnyIterable<T, ReturnT = *> = AsyncValue<$AsyncIterable<AsyncValue<T>, ReturnT, void> | $Iterable<AsyncValue<T>, ReturnT, void>>
+import "./symbolAsyncIterator.js"
 
 /**
  * Merges async or sync iterables into async one.

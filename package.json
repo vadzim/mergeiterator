@@ -5,6 +5,7 @@
   "license": "MIT",
   "repository": "https://github.com/vadzim/mergeiterator",
   "main": "dist/index.js",
+  "types": "src/index.d.ts",
   "bugs": {
     "url": "https://github.com/vadzim/mergeiterator/issues"
   },
@@ -45,7 +46,9 @@
     "iterator",
     "AsyncIterator"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "type-any-iterable": "^1.0.0"
+  },
   "peerDependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.7.7",
