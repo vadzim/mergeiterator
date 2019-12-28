@@ -51,32 +51,35 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 		onStateChanged = resolve
 	}
 
-	function throwError(error) {
-		iteratorsCount--
-		getters.push(() => {
-			throw error
-		})
-		mergeDone = true
-		onStateChanged()
-	}
-
-	function iteratorStopped() {
-		iteratorsCount--
-		onStateChanged()
-	}
-
 	function stopRootIterator() {
 		stopIterator(rootIterator).then(
 			({ done, value }) => {
 				if (done) rootReturnResult = value
-				iteratorStopped()
+				iteratorsCount--
+				onStateChanged()
 			},
-			error => throwError(error),
+			error => {
+				getters.push(() => { throw error })
+				mergeDone = true
+				iteratorsCount--
+				onStateChanged()
+			},
 		)
 	}
 
 	function stopChildIterator(iterator) {
-		stopIterator(iterator).then(() => iteratorStopped(), error => throwError(error))
+		stopIterator(iterator).then(
+			() => {
+				iteratorsCount--
+				onStateChanged()
+			},
+			error => {
+				getters.push(() => { throw error })
+				mergeDone = true
+				iteratorsCount--
+				onStateChanged()
+			},
+		)
 	}
 
 	function readRootIterator() {
@@ -88,27 +91,35 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 			({ done, value }) => {
 				if (done) {
 					rootReturnResult = value
-					iteratorStopped()
+					iteratorsCount--
+					onStateChanged()
 					return
 				}
 				if (mergeDone) {
 					stopRootIterator()
 					return
 				}
-				let iterator
+				let childIterator
 				try {
-					iterator = getIterator(value)
-				} catch (e) {
-					throwError(e)
+					childIterator = getIterator(value)
+				} catch (error) {
 					stopRootIterator()
+					getters.push(() => { throw error })
+					mergeDone = true
+					onStateChanged()
 					return
 				}
 				iteratorsCount++
 				ticks.push(readRootIterator)
-				ticks.push(getChildReader(iterator))
+				ticks.push(getChildReader(childIterator))
 				onStateChanged()
 			},
-			error => throwError(error),
+			error => {
+				getters.push(() => { throw error })
+				mergeDone = true
+				iteratorsCount--
+				onStateChanged()
+			},
 		)
 	}
 
@@ -121,7 +132,8 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 			readIterator(iterator).then(
 				({ done, value }) => {
 					if (done) {
-						iteratorStopped()
+						iteratorsCount--
+						onStateChanged()
 						return
 					}
 					if (mergeDone) {
@@ -132,7 +144,12 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 					getters.push(() => (value: any))
 					onStateChanged()
 				},
-				error => throwError(error),
+				error => {
+					getters.push(() => { throw error })
+					mergeDone = true
+					iteratorsCount--
+					onStateChanged()
+				},
 			)
 		}
 	}
