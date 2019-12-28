@@ -28,6 +28,8 @@ async function* repeat(value, count = Infinity, interval = 0, onDone = undefined
 }
 
 describe("mergeiterator", () => {
+	test("example does not fail", () => import("../example/example.js"))
+
 	describe("test time intervals", () => {
 		test("test", async () => {
 			const done = new Deferred()
