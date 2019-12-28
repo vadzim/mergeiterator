@@ -7,8 +7,8 @@ type AnyIterable<T, ReturnT = *> = $AsyncIterable<Promise<T> | T, ReturnT, void>
 /**
  * Merges async or sync iterables into async one.
  */
-export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, ReturnT>): AsyncGenerator<T, ReturnT, void> {
-	const rootIterator = getIterator(sequences)
+export async function* merge<T, ReturnT>(sequences: Promise<AnyIterable<AnyIterable<T>, ReturnT>> | AnyIterable<AnyIterable<T>, ReturnT>): AsyncGenerator<T, ReturnT, void> {
+	const rootIterator = getIterator(await sequences)
 	const ticks = [readRootIterator]
 	const getters = []
 	let iteratorsCount = 1 // There is only rootIterator opened so far.
