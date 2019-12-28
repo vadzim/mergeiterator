@@ -13,7 +13,7 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 	const getters = []
 	let iteratorsCount = 1 // There is only rootIterator opened so far.
 	let mergeDone = false
-	let onStateChanged
+	let onStateChanged // should be called whenever values used in the main `while` loop have been changed. These are: iteratorsCount, ticks and getters
 	let normalReturn = true
 	let rootReturnResult
 
