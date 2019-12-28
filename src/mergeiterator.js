@@ -7,7 +7,9 @@ type AnyIterable<T, ReturnT = *> = $AsyncIterable<Promise<T> | T, ReturnT, void>
 /**
  * Merges async or sync iterables into async one.
  */
-export async function* merge<T, ReturnT>(sequences: Promise<AnyIterable<AnyIterable<T>, ReturnT>> | AnyIterable<AnyIterable<T>, ReturnT>): AsyncGenerator<T, ReturnT, void> {
+export async function* merge<T, ReturnT>(
+	sequences: Promise<AnyIterable<AnyIterable<T>, ReturnT>> | AnyIterable<AnyIterable<T>, ReturnT>,
+): AsyncGenerator<T, ReturnT, void> {
 	const rootIterator = getIterator(await sequences)
 	const ticks = [readRootIterator]
 	const getters = []
@@ -59,7 +61,9 @@ export async function* merge<T, ReturnT>(sequences: Promise<AnyIterable<AnyItera
 				onStateChanged()
 			},
 			error => {
-				getters.push(() => { throw error })
+				getters.push(() => {
+					throw error
+				})
 				mergeDone = true
 				iteratorsCount--
 				onStateChanged()
@@ -74,7 +78,9 @@ export async function* merge<T, ReturnT>(sequences: Promise<AnyIterable<AnyItera
 				onStateChanged()
 			},
 			error => {
-				getters.push(() => { throw error })
+				getters.push(() => {
+					throw error
+				})
 				mergeDone = true
 				iteratorsCount--
 				onStateChanged()
@@ -104,7 +110,9 @@ export async function* merge<T, ReturnT>(sequences: Promise<AnyIterable<AnyItera
 					childIterator = getIterator(value)
 				} catch (error) {
 					stopRootIterator()
-					getters.push(() => { throw error })
+					getters.push(() => {
+						throw error
+					})
 					mergeDone = true
 					onStateChanged()
 					return
@@ -115,7 +123,9 @@ export async function* merge<T, ReturnT>(sequences: Promise<AnyIterable<AnyItera
 				onStateChanged()
 			},
 			error => {
-				getters.push(() => { throw error })
+				getters.push(() => {
+					throw error
+				})
 				mergeDone = true
 				iteratorsCount--
 				onStateChanged()
@@ -145,7 +155,9 @@ export async function* merge<T, ReturnT>(sequences: Promise<AnyIterable<AnyItera
 					onStateChanged()
 				},
 				error => {
-					getters.push(() => { throw error })
+					getters.push(() => {
+						throw error
+					})
 					mergeDone = true
 					iteratorsCount--
 					onStateChanged()

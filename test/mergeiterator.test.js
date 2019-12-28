@@ -56,7 +56,12 @@ describe("mergeiterator", () => {
 			expect(await it.next()).toEqual({ value: 5, done: false }) // 1110 #5.3
 			expect(await it.next()).toEqual({ value: 3, done: false }) // 1332 #3.5
 			expect(await it.next()).toEqual({ value: 5, done: false }) // 1665 #5.4
-			expect(await it.next().then(result => ({ result }), error => error)).toEqual(10) // 177
+			expect(
+				await it.next().then(
+					result => ({ result }),
+					error => error,
+				),
+			).toEqual(10) // 177
 			expect(await it.next()).toEqual({ value: undefined, done: true })
 			expect(await it.next()).toEqual({ value: undefined, done: true })
 			await done.promise
@@ -101,7 +106,12 @@ describe("mergeiterator", () => {
 			expect(await v.shift()).toEqual({ value: 5, done: false }) // 1110 #5.3
 			expect(await v.shift()).toEqual({ value: 3, done: false }) // 1332 #3.5
 			expect(await v.shift()).toEqual({ value: 5, done: false }) // 1665 #5.4
-			expect(await v.shift().then(result => ({ result }), error => error)).toEqual(10) // 177
+			expect(
+				await v.shift().then(
+					result => ({ result }),
+					error => error,
+				),
+			).toEqual(10) // 177
 			expect(await v.shift()).toEqual({ value: undefined, done: true })
 			expect(await v.shift()).toEqual({ value: undefined, done: true })
 			await done.promise
@@ -159,12 +169,22 @@ describe("mergeiterator", () => {
 
 		test("throw on non-iterable", async () => {
 			const it = merge(([0]: any))
-			expect(await it.next().then(() => Promise.reject(), error => error)).toBeInstanceOf(TypeError)
+			expect(
+				await it.next().then(
+					() => Promise.reject(),
+					error => error,
+				),
+			).toBeInstanceOf(TypeError)
 		})
 
 		test("throw on non-iterable on top level", async () => {
 			const it = merge((0: any))
-			expect(await it.next().then(() => Promise.reject(), error => error)).toBeInstanceOf(TypeError)
+			expect(
+				await it.next().then(
+					() => Promise.reject(),
+					error => error,
+				),
+			).toBeInstanceOf(TypeError)
 		})
 
 		test("no extra yield after break: sync generator", async () => {
