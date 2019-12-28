@@ -57,6 +57,6 @@ Merges async or sync iterables into async one.
 
 #### Parameters
 
--   `sequences` **([Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;AnyIterable&lt;AnyIterable&lt;T>, ReturnT>> | AnyIterable&lt;AnyIterable&lt;T>, ReturnT>)** 
+-   `sequences` **AnyIterable&lt;AnyIterable&lt;T>, ReturnT>** 
 
 Returns **AsyncGenerator&lt;T, ReturnT, void>** 
