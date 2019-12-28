@@ -104,8 +104,8 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 					return
 				}
 				iteratorsCount++
-				ticks.push(getChildReader(iterator))
 				ticks.push(readRootIterator)
+				ticks.push(getChildReader(iterator))
 				onStateChanged()
 			},
 			error => throwError(error),
