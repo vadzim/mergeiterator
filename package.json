@@ -47,7 +47,7 @@
     "AsyncIterator"
   ],
   "dependencies": {
-    "type-any-iterable": "^1.0.0"
+    "type-any-iterable": "^1.0.2"
   },
   "peerDependencies": {},
   "devDependencies": {
