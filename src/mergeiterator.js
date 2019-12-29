@@ -166,7 +166,6 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 const getIterator = (iterable: any): any => {
 	const method = iterable[(Symbol: any).asyncIterator] || iterable[Symbol.iterator]
 	if (method) return (method.call(iterable): any)
-	if (typeof iterable.next === "function") return iterable
 	// eslint-disable-next-line no-unused-vars
 	for (/* should throw here */ const x of iterable) {
 		// istanbul ignore next

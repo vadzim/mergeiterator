@@ -335,6 +335,88 @@ describe("mergeiterator", () => {
 				throw new Error(`wrong number of iterators created: ${maxc}`)
 			}
 		})
+
+		function take10OfInfiniteMerge(cb) {
+			return take(10, merge(infiniteIterables(cb))).then(x => x.join(",") === "0,1,3,2,5,6,4,7,10,12")
+		}
+
+		test("throwing on child return", async () => {
+			await expect(
+				take10OfInfiniteMerge(msg => {
+					if (msg === "child-return") {
+						throw new Error("child-return")
+					}
+				}),
+			).rejects.toThrow("child-return")
+		})
+
+		test("throwing on root return", async () => {
+			await expect(
+				take10OfInfiniteMerge(msg => {
+					if (msg === "root-return") {
+						throw new Error("root-return")
+					}
+				}),
+			).rejects.toThrow("root-return")
+		})
+
+		test("throwing in child", async () => {
+			await expect(
+				take10OfInfiniteMerge((msg, n) => {
+					if (msg === "child-yielding" && n === 7) {
+						throw new Error("child-yielding")
+					}
+				}),
+			).rejects.toThrow("child-yielding")
+		})
+
+		test("throwing in child and yield in root return", async () => {
+			let returnCalled = false
+			let thrown = false
+			await expect(
+				take10OfInfiniteMerge((msg, n) => {
+					if (msg === "child-yielding" && n === 7) {
+						thrown = true
+						throw new Error("child-yielding")
+					}
+					if (msg === "root-return") {
+						returnCalled = true
+						return [[42]]
+					}
+					return []
+				}),
+			).rejects.toThrow("child-yielding")
+			expect(returnCalled).toBe(true)
+			expect(thrown).toBe(true)
+		})
+
+		test("yield in root return", async () => {
+			let returnCalled = false
+			await expect(
+				take10OfInfiniteMerge(msg => {
+					if (msg === "root-return") {
+						returnCalled = true
+						return [[42]]
+					}
+					return []
+				}),
+			).resolves.toBe(true)
+			expect(returnCalled).toBe(true)
+		})
+
+		test("yield in child return", async () => {
+			let returnCalled = false
+			await expect(
+				take10OfInfiniteMerge(msg => {
+					if (msg === "child-return") {
+						returnCalled = true
+						return [42]
+					}
+					return []
+				}),
+			).resolves.toBe(true)
+			expect(returnCalled).toBe(true)
+		})
 	})
 })
 
@@ -344,30 +426,43 @@ function useVariable(x) {
 
 function* infiniteIterable(n, cb) {
 	try {
-		cb("child-start", n)
+		yield* cb("child-start", n) || []
 		for (let i = 0; ; ++i) {
 			const x = (2 * i + 1) * 2 ** n
-			cb("child-yielding", x, n)
+			yield* cb("child-yielding", x, n) || []
 			yield x
-			cb("child-yielded", x, n)
+			yield* cb("child-yielded", x, n) || []
 		}
 	} finally {
-		cb("child-return", n)
+		yield* cb("child-return", n) || []
 	}
 }
 
 async function* infiniteIterables(cb: Function = () => {}) {
 	try {
-		cb("root-start")
-		cb("root-yielding", 0)
+		yield* cb("root-start") || []
+		yield* cb("root-yielding", 0) || []
 		yield [0]
-		cb("root-yielded", 0)
+		yield* cb("root-yielded", 0) || []
 		for (let n = 0; ; ++n) {
-			cb("root-yielding", n + 1)
+			yield* cb("root-yielding", n + 1) || []
 			yield infiniteIterable(n, cb)
-			cb("root-yielded", n + 1)
+			yield* cb("root-yielded", n + 1) || []
 		}
 	} finally {
-		cb("root-return")
+		yield* cb("root-return") || []
 	}
+}
+
+async function take(n, iterable) {
+	const result = []
+	if (n <= 0) {
+		await iterable.return()
+	} else {
+		for await (const x of iterable) {
+			result.push(x)
+			if (result.length >= n) break
+		}
+	}
+	return result
 }
