@@ -5,7 +5,7 @@ module.exports = {
 			{
 				targets: {
 					// TODO:
-					// compiling to node@8 causes tests to fail because of bugs either in babel or regenerator
+					// compiling to node@8 causes tests to fail possible because of bugs either in babel or in regenerator
 					node: process.env.NODE_ENV === "test" ? 10 : 8,
 				},
 			},
