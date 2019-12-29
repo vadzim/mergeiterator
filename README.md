@@ -15,22 +15,27 @@ Any iterator can be infinite, including the list of iterables itself.
 import merge from "mergeiterator"
 
 async function DoIt() {
-	const array = [1, 2, 3, 4, 5]
-	const promisedArray = Promise.resolve([6, Promise.resolve(7)])
-	function *generator() {
-		let i = 10
-		while (true) yield (i++)
-	}
-	async function *asyncGenerator() {
-		yield 8
-		yield Promise.resolve(9)
-	}
-	for await (const v of merge([array, promisedArray, generator(), asyncGenerator()])) {
+	for await (const v of merge([
+		[1, 2, Promise.resolve(3)],
+		Promise.resolve([4, 5]),
+		(function*() {
+			let i = 9
+			while (true) {
+				yield i++
+				yield Promise.resolve(i++)
+			}
+		})(),
+		(async function*() {
+			yield 6
+			yield await Promise.resolve(7)
+			yield Promise.resolve(8)
+		})(),
+	])) {
 		console.log(v)
 	}
 }
 
-// 1 2 6 3 7 10 4 11 8 5 12 9 13 14 15 ...
+// 1 4 2 9 5 3 10 6 11 7 12 8 13 14 15 16 17 18 19 20 ...
 ```
 
 This function guarantees, that if some value is yielded by some of iterables, then that value will be eventually yielded. This is basically about infinite iterables.

@@ -1,28 +1,26 @@
 // @flow
 
-import "./symbolAsyncIterator.js"
-
-type AnyIterable<T, ReturnT = *> = $AsyncIterable<Promise<T> | T, ReturnT, void> | $Iterable<Promise<T> | T, ReturnT, void>
+import { type AnyIterable } from "type-any-iterable"
 
 /**
  * Merges async or sync iterables into async one.
  */
 export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, ReturnT>): AsyncGenerator<T, ReturnT, void> {
-	const rootIterator = getIterator(sequences)
-	const readers = [readRootIterator]
-	const valueGetters = []
+	const rootIterator = getIterator(await sequences)
+	const ticks = [readRootIterator]
+	const getters = []
 	let iteratorsCount = 1 // There is only rootIterator opened so far.
 	let mergeDone = false
-	let onStateChanged
+	let onStateChanged // should be called whenever values used in the main `while` loop have been changed. These are: iteratorsCount, ticks and getters
 	let normalReturn = true
 	let rootReturnResult
 
 	try {
 		while (iteratorsCount > 0) {
 			const stateChanged = new Promise(setOnStateChanged)
-			while (readers.length) readers.shift()()
+			while (ticks.length) ticks.shift()()
 			await stateChanged
-			while (valueGetters.length > 0) yield valueGetters.shift()()
+			while (getters.length > 0) yield getters.shift()()
 		}
 	} catch (e) {
 		normalReturn = false
@@ -31,13 +29,13 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 		mergeDone = true
 		while (iteratorsCount > 0) {
 			const stateChanged = new Promise(setOnStateChanged)
-			while (readers.length) readers.shift()()
+			while (ticks.length) ticks.shift()()
 			await stateChanged
 		}
 		// Do not hide an exception if it's been already raised.
 		if (normalReturn) {
 			// Raise possible exceptions on iterators interruption.
-			while (valueGetters.length > 0) valueGetters.shift()()
+			while (getters.length > 0) getters.shift()()
 			// There is no chance to return a value out of finally block if .return() is called.
 			// eslint-disable-next-line no-unsafe-finally
 			return (rootReturnResult: any)
@@ -51,32 +49,39 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 		onStateChanged = resolve
 	}
 
-	function throwError(error) {
-		iteratorsCount--
-		valueGetters.push(() => {
-			throw error
-		})
-		mergeDone = true
-		onStateChanged()
-	}
-
-	function iteratorStopped() {
-		iteratorsCount--
-		onStateChanged()
-	}
-
 	function stopRootIterator() {
 		stopIterator(rootIterator).then(
 			({ done, value }) => {
 				if (done) rootReturnResult = value
-				iteratorStopped()
+				iteratorsCount--
+				onStateChanged()
 			},
-			error => throwError(error),
+			error => {
+				getters.push(() => {
+					throw error
+				})
+				mergeDone = true
+				iteratorsCount--
+				onStateChanged()
+			},
 		)
 	}
 
 	function stopChildIterator(iterator) {
-		stopIterator(iterator).then(() => iteratorStopped(), error => throwError(error))
+		stopIterator(iterator).then(
+			() => {
+				iteratorsCount--
+				onStateChanged()
+			},
+			error => {
+				getters.push(() => {
+					throw error
+				})
+				mergeDone = true
+				iteratorsCount--
+				onStateChanged()
+			},
+		)
 	}
 
 	function readRootIterator() {
@@ -88,27 +93,39 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 			({ done, value }) => {
 				if (done) {
 					rootReturnResult = value
-					iteratorStopped()
+					iteratorsCount--
+					onStateChanged()
 					return
 				}
 				if (mergeDone) {
 					stopRootIterator()
 					return
 				}
-				let iterator
+				let childIterator
 				try {
-					iterator = getIterator(value)
-				} catch (e) {
-					throwError(e)
+					childIterator = getIterator(value)
+				} catch (error) {
 					stopRootIterator()
+					getters.push(() => {
+						throw error
+					})
+					mergeDone = true
+					onStateChanged()
 					return
 				}
 				iteratorsCount++
-				readers.push(getChildReader(iterator))
-				readers.push(readRootIterator)
+				ticks.push(readRootIterator)
+				ticks.push(getChildReader(childIterator))
 				onStateChanged()
 			},
-			error => throwError(error),
+			error => {
+				getters.push(() => {
+					throw error
+				})
+				mergeDone = true
+				iteratorsCount--
+				onStateChanged()
+			},
 		)
 	}
 
@@ -121,18 +138,26 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 			readIterator(iterator).then(
 				({ done, value }) => {
 					if (done) {
-						iteratorStopped()
+						iteratorsCount--
+						onStateChanged()
 						return
 					}
 					if (mergeDone) {
 						stopChildIterator(iterator)
 						return
 					}
-					readers.push(readChildIterator)
-					valueGetters.push(() => (value: any))
+					ticks.push(readChildIterator)
+					getters.push(() => (value: any))
 					onStateChanged()
 				},
-				error => throwError(error),
+				error => {
+					getters.push(() => {
+						throw error
+					})
+					mergeDone = true
+					iteratorsCount--
+					onStateChanged()
+				},
 			)
 		}
 	}
@@ -141,7 +166,6 @@ export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, 
 const getIterator = (iterable: any): any => {
 	const method = iterable[(Symbol: any).asyncIterator] || iterable[Symbol.iterator]
 	if (method) return (method.call(iterable): any)
-	if (typeof iterable.next === "function") return iterable
 	// eslint-disable-next-line no-unused-vars
 	for (/* should throw here */ const x of iterable) {
 		// istanbul ignore next

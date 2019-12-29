@@ -30,6 +30,6 @@
     "no-plusplus": "off",
     "require-yield": "off",
     "no-use-before-define": "off",
-    "import/extensions": ["error", "always"],
+    "import/extensions": ["error", "ignorePackages"],
   }
 }
