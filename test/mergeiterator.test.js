@@ -295,35 +295,28 @@ describe("mergeiterator", () => {
 		})
 
 		test("infinite number of infinite iterators", async () => {
-			let c = 0
-			async function* iterable(n) {
-				++c
-				try {
-					for (let i = 0; ; ++i) {
-						yield (2 * i + 1) * 2 ** n
-						await undefined
-					}
-				} finally {
-					--c
-				}
-			}
-			async function* iterables() {
-				++c
-				try {
-					yield [0]
-					await undefined
-					for (let n = 0; ; ++n) {
-						yield iterable(n)
-						await undefined
-					}
-				} finally {
-					--c
-				}
-			}
 			const n = 1001 // should be odd
 			let x = 0
 			let i = 0
-			for await (const j of merge(iterables())) {
+			let c = 0
+			let maxc = 0
+
+			const countIterators = msg => {
+				switch (msg) {
+					case "child-start":
+					case "root-start":
+						c++
+						break
+					case "child-return":
+					case "root-return":
+						c--
+						break
+					default:
+				}
+				if (maxc < c) maxc = c
+			}
+
+			for await (const j of merge(infiniteIterables(countIterators))) {
 				++i
 				if (j === n || i > n * n) {
 					break
@@ -338,10 +331,43 @@ describe("mergeiterator", () => {
 			if (c !== 0) {
 				throw new Error(`return() failed: ${c}`)
 			}
+			if (maxc !== (n + 3) / 2) {
+				throw new Error(`wrong number of iterators created: ${maxc}`)
+			}
 		})
 	})
 })
 
 function useVariable(x) {
 	return x
+}
+
+function* infiniteIterable(n, cb) {
+	try {
+		cb("child-start", n)
+		for (let i = 0; ; ++i) {
+			const x = (2 * i + 1) * 2 ** n
+			cb("child-yielding", x, n)
+			yield x
+			cb("child-yielded", x, n)
+		}
+	} finally {
+		cb("child-return", n)
+	}
+}
+
+async function* infiniteIterables(cb: Function = () => {}) {
+	try {
+		cb("root-start")
+		cb("root-yielding", 0)
+		yield [0]
+		cb("root-yielded", 0)
+		for (let n = 0; ; ++n) {
+			cb("root-yielding", n + 1)
+			yield infiniteIterable(n, cb)
+			cb("root-yielded", n + 1)
+		}
+	} finally {
+		cb("root-return")
+	}
 }
