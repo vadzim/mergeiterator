@@ -2,10 +2,6 @@
 
 import merge from "../src/index.js"
 
-declare var describe
-declare var test
-declare var expect
-
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 class Deferred<T> {

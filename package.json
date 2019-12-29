@@ -23,7 +23,7 @@
     "coverage": "npm test -- --coverage --collectCoverageFrom=src/**/*.js",
     "lint": "eslint .",
     "flow": "flow check",
-    "flowinstall": "flow-typed install --ignoreDeps=dev",
+    "flowinstall": "flow-typed install --ignoreDeps=dev; flow-typed install jest",
     "docs": "documentation --config documentation.yml readme src --section=API",
     "postdocs": "git add README.md",
     "clean": "rimraf dist",
