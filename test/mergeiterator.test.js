@@ -40,27 +40,22 @@ describe("mergeiterator", () => {
 				}),
 			],
 		])
-		expect(await it.next()).toEqual({ value: 1, done: false }) // 0ms
-		expect(await it.next()).toEqual({ value: 2, done: false }) // 0
-		expect(await it.next()).toEqual({ value: 3, done: false }) // 0 #3.1
-		expect(await it.next()).toEqual({ value: 2, done: false }) // 0
-		expect(await it.next()).toEqual({ value: 5, done: false }) // 0 #5.1
-		expect(await it.next()).toEqual({ value: 3, done: false }) // 333 #3.2
-		expect(await it.next()).toEqual({ value: 5, done: false }) // 555 #5.2
-		expect(await it.next()).toEqual({ value: 3, done: false }) // 666 #3.3
-		expect(await it.next()).toEqual({ value: 7, done: false }) // 777
-		expect(await it.next()).toEqual({ value: 3, done: false }) // 999 #3.4
-		expect(await it.next()).toEqual({ value: 5, done: false }) // 1110 #5.3
-		expect(await it.next()).toEqual({ value: 3, done: false }) // 1332 #3.5
-		expect(await it.next()).toEqual({ value: 5, done: false }) // 1665 #5.4
-		expect(
-			await it.next().then(
-				result => ({ result }),
-				error => error,
-			),
-		).toEqual(10) // 177
-		expect(await it.next()).toEqual({ value: undefined, done: true })
-		expect(await it.next()).toEqual({ value: undefined, done: true })
+		await expect(it.next()).resolves.toEqual({ value: 1, done: false }) // 0ms
+		await expect(it.next()).resolves.toEqual({ value: 2, done: false }) // 0
+		await expect(it.next()).resolves.toEqual({ value: 3, done: false }) // 0 #3.1
+		await expect(it.next()).resolves.toEqual({ value: 2, done: false }) // 0
+		await expect(it.next()).resolves.toEqual({ value: 5, done: false }) // 0 #5.1
+		await expect(it.next()).resolves.toEqual({ value: 3, done: false }) // 333 #3.2
+		await expect(it.next()).resolves.toEqual({ value: 5, done: false }) // 555 #5.2
+		await expect(it.next()).resolves.toEqual({ value: 3, done: false }) // 666 #3.3
+		await expect(it.next()).resolves.toEqual({ value: 7, done: false }) // 777
+		await expect(it.next()).resolves.toEqual({ value: 3, done: false }) // 999 #3.4
+		await expect(it.next()).resolves.toEqual({ value: 5, done: false }) // 1110 #5.3
+		await expect(it.next()).resolves.toEqual({ value: 3, done: false }) // 1332 #3.5
+		await expect(it.next()).resolves.toEqual({ value: 5, done: false }) // 1665 #5.4
+		await expect(it.next()).rejects.toBe(10) // 177
+		await expect(it.next()).resolves.toEqual({ value: undefined, done: true })
+		await expect(it.next()).resolves.toEqual({ value: undefined, done: true })
 		await done.promise
 
 		// test types
@@ -88,27 +83,22 @@ describe("mergeiterator", () => {
 		for (let i = 0; i < 16; ++i) {
 			v[i] = it.next()
 		}
-		expect(await v.shift()).toEqual({ value: 1, done: false }) // 0ms
-		expect(await v.shift()).toEqual({ value: 2, done: false }) // 0
-		expect(await v.shift()).toEqual({ value: 3, done: false }) // 0 #3.1
-		expect(await v.shift()).toEqual({ value: 2, done: false }) // 0
-		expect(await v.shift()).toEqual({ value: 5, done: false }) // 0 #5.1
-		expect(await v.shift()).toEqual({ value: 3, done: false }) // 333 #3.2
-		expect(await v.shift()).toEqual({ value: 5, done: false }) // 555 #5.2
-		expect(await v.shift()).toEqual({ value: 3, done: false }) // 666 #3.3
-		expect(await v.shift()).toEqual({ value: 7, done: false }) // 777
-		expect(await v.shift()).toEqual({ value: 3, done: false }) // 999 #3.4
-		expect(await v.shift()).toEqual({ value: 5, done: false }) // 1110 #5.3
-		expect(await v.shift()).toEqual({ value: 3, done: false }) // 1332 #3.5
-		expect(await v.shift()).toEqual({ value: 5, done: false }) // 1665 #5.4
-		expect(
-			await v.shift().then(
-				result => ({ result }),
-				error => error,
-			),
-		).toEqual(10) // 177
-		expect(await v.shift()).toEqual({ value: undefined, done: true })
-		expect(await v.shift()).toEqual({ value: undefined, done: true })
+		await expect(v.shift()).resolves.toEqual({ value: 1, done: false }) // 0ms
+		await expect(v.shift()).resolves.toEqual({ value: 2, done: false }) // 0
+		await expect(v.shift()).resolves.toEqual({ value: 3, done: false }) // 0 #3.1
+		await expect(v.shift()).resolves.toEqual({ value: 2, done: false }) // 0
+		await expect(v.shift()).resolves.toEqual({ value: 5, done: false }) // 0 #5.1
+		await expect(v.shift()).resolves.toEqual({ value: 3, done: false }) // 333 #3.2
+		await expect(v.shift()).resolves.toEqual({ value: 5, done: false }) // 555 #5.2
+		await expect(v.shift()).resolves.toEqual({ value: 3, done: false }) // 666 #3.3
+		await expect(v.shift()).resolves.toEqual({ value: 7, done: false }) // 777
+		await expect(v.shift()).resolves.toEqual({ value: 3, done: false }) // 999 #3.4
+		await expect(v.shift()).resolves.toEqual({ value: 5, done: false }) // 1110 #5.3
+		await expect(v.shift()).resolves.toEqual({ value: 3, done: false }) // 1332 #3.5
+		await expect(v.shift()).resolves.toEqual({ value: 5, done: false }) // 1665 #5.4
+		await expect(v.shift()).rejects.toBe(10) // 177
+		await expect(v.shift()).resolves.toEqual({ value: undefined, done: true })
+		await expect(v.shift()).resolves.toEqual({ value: undefined, done: true })
 		await done.promise
 	})
 
@@ -126,17 +116,35 @@ describe("mergeiterator", () => {
 					return 42
 				})(),
 			)
-			expect(await it.next()).toEqual({ done: false, value: 13 })
-			expect(await it.next()).toEqual({ done: true, value: 42 })
+			await expect(it.next()).resolves.toEqual({ done: false, value: 13 })
+			await expect(it.next()).resolves.toEqual({ done: true, value: 42 })
 		})
 
 		test("merges empty list", async () => {
-			expect(await merge([]).next()).toEqual({ done: true, value: undefined })
+			await expect(merge([]).next()).resolves.toEqual({ done: true, value: undefined })
 		})
 
 		test("merges list of empties", async () => {
-			// eslint-disable-next-line no-empty-function
-			expect(await merge([[], [], [], (function*() {})(), (async function*() {})(), [], [], []]).next()).toEqual({ done: true, value: undefined })
+			await expect(
+				merge(
+					(function*() {
+						yield []
+						yield []
+						// eslint-disable-next-line no-empty-function
+						yield (function*() {})()
+						yield (async function*() {
+							await Promise.resolve()
+							return "rejected"
+						})()
+						yield []
+						yield []
+						return "ok"
+					})(),
+				).next(),
+			).resolves.toEqual({
+				done: true,
+				value: "ok",
+			})
 		})
 
 		test("rethrow sync", async () => {
@@ -148,7 +156,7 @@ describe("mergeiterator", () => {
 					})()
 				})(),
 			)
-			expect(await it.next().catch(error => ({ error }))).toEqual({ error: 10 })
+			await expect(it.next()).rejects.toBe(10)
 		})
 
 		test("rethrow sync on top level", async () => {
@@ -158,27 +166,15 @@ describe("mergeiterator", () => {
 					throw 10
 				})(),
 			)
-			expect(await it.next().catch(error => ({ error }))).toEqual({ error: 10 })
+			await expect(it.next()).rejects.toBe(10)
 		})
 
-		test("throw on non-iterable", async () => {
-			const it = merge(([0]: any))
-			expect(
-				await it.next().then(
-					() => Promise.reject(),
-					error => error,
-				),
-			).toBeInstanceOf(TypeError)
+		test("throw on non-iterable child", async () => {
+			await expect(merge(([0]: any)).next()).rejects.toBeInstanceOf(TypeError)
 		})
 
-		test("throw on non-iterable on top level", async () => {
-			const it = merge((0: any))
-			expect(
-				await it.next().then(
-					() => Promise.reject(),
-					error => error,
-				),
-			).toBeInstanceOf(TypeError)
+		test("throw on non-iterable root", async () => {
+			await expect(merge((0: any)).next()).rejects.toBeInstanceOf(TypeError)
 		})
 
 		test("no extra yield after break: sync generator", async () => {
@@ -193,7 +189,7 @@ describe("mergeiterator", () => {
 				useVariable(x)
 				break
 			}
-			expect(extraYield).toEqual(false)
+			expect(extraYield).toBe(false)
 		})
 
 		test("no extra yield after break: async generator", async () => {
@@ -208,7 +204,7 @@ describe("mergeiterator", () => {
 				useVariable(x)
 				break
 			}
-			expect(extraYield).toEqual(false)
+			expect(extraYield).toBe(false)
 		})
 
 		test("no extra yield after break: async generator, async body", async () => {
@@ -224,7 +220,7 @@ describe("mergeiterator", () => {
 				await new Promise(resolve => setTimeout(resolve, 20))
 				break
 			}
-			expect(extraYield).toEqual(false)
+			expect(extraYield).toBe(false)
 		})
 
 		test("no extra yield after break: async generator+promise", async () => {
@@ -239,7 +235,7 @@ describe("mergeiterator", () => {
 				useVariable(x)
 				break
 			}
-			expect(extraYield).toEqual(false)
+			expect(extraYield).toBe(false)
 		})
 
 		test("no extra yield after break: async generator+promise, async body", async () => {
@@ -255,7 +251,7 @@ describe("mergeiterator", () => {
 				await new Promise(resolve => setTimeout(resolve, 20))
 				break
 			}
-			expect(extraYield).toEqual(false)
+			expect(extraYield).toBe(false)
 		})
 
 		test("throwing error after yield", async () => {
