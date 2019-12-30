@@ -178,9 +178,12 @@ const getIterator = (iterable: any): any => {
 const readIterator = iterator => PromiseTry(() => iterator.next()).then(({ done, value }) => Promise.resolve(value).then(v => ({ done, value: v })))
 
 const stopIterator = iterator =>
-	PromiseTry(() => (iterator.return ? iterator.return() : { done: true, value: undefined })).then(({ done, value }) =>
-		Promise.resolve(value).then(v => ({ done, value: v })),
-	)
+	PromiseTry(() => {
+		const ret = iterator.return
+		return !ret
+			? { done: true, value: undefined }
+			: Promise.resolve(ret.call(iterator)).then(({ done, value }) => Promise.resolve(value).then(v => ({ done, value: v })))
+	})
 
 const PromiseTry = func => {
 	try {
