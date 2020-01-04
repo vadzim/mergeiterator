@@ -1,3 +1,9 @@
+## 1.3.1
+
+fix:
+
+* change ts return type to AsyncGenerator
+
 ## 1.3.0
 
 enhancement:
