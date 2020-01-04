@@ -47,7 +47,7 @@
     "AsyncIterator"
   ],
   "dependencies": {
-    "type-any-iterable": "^1.0.3"
+    "type-any-iterable": "^1.0.5"
   },
   "peerDependencies": {},
   "devDependencies": {
@@ -68,11 +68,11 @@
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-config-prettier": "^6.9.0",
-    "eslint-plugin-flowtype": "^4.5.2",
+    "eslint-plugin-flowtype": "^4.5.3",
     "eslint-plugin-flowtype-errors": "^4.1.0",
     "eslint-plugin-import": "^2.19.1",
     "eslint-plugin-prettier": "^3.1.2",
-    "flow-bin": "^0.114.0",
+    "flow-bin": "^0.115.0",
     "flow-copy-source": "^2.0.9",
     "flow-typed": "^2.6.2",
     "jest": "^24.9.0",
