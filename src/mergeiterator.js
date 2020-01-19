@@ -8,6 +8,7 @@ import { type AnyIterable } from "type-any-iterable"
 export async function* merge<T, ReturnT>(
 	sequences: AnyIterable<AnyIterable<T>, ReturnT>,
 ): AsyncGenerator<T, ReturnT, void> {
+	//
 	const rootIterator = getIterator(await sequences)
 	const ticks = [readRootIterator]
 	const getters = []
