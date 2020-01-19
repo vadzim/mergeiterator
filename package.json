@@ -19,7 +19,7 @@
     "src"
   ],
   "scripts": {
-    "test": "jest",
+    "test": "node --expose-gc node_modules/.bin/jest",
     "coverage": "npm test -- --coverage --collectCoverageFrom=src/**/*.js",
     "lint": "eslint . --ext .js,.ts",
     "flow": "flow check",

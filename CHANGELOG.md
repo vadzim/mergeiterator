@@ -1,3 +1,7 @@
+enhancement:
+
+* added performance test
+
 ## 1.3.1
 
 fix:
