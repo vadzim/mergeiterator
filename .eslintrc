@@ -10,6 +10,21 @@
     "flowtype",
     "flowtype-errors",
   ],
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "extends": [
+        "airbnb-base",
+        "plugin:@typescript-eslint/recommended",
+        "prettier/@typescript-eslint",
+        "plugin:prettier/recommended",
+      ],
+      "plugins": [
+        "@typescript-eslint",
+      ],
+    },
+  ],
   "env": {
     "jest": true,
   },

@@ -11,13 +11,11 @@ module.exports = {
 			},
 		],
 		"@babel/preset-flow",
+		"@babel/preset-typescript",
 	],
 	plugins: [
 		"@babel/plugin-proposal-class-properties",
-		"@babel/plugin-proposal-nullish-coalescing-operator",
-		"@babel/plugin-proposal-numeric-separator",
-		"@babel/plugin-proposal-optional-chaining",
-		["@babel/plugin-proposal-pipeline-operator", { proposal: "minimal" }],
 		["add-module-exports", { addDefaultProperty: true }],
+		//
 	],
 }

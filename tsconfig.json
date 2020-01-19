@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "esModuleInterop": true,
+        "downlevelIteration": true,
+        "strict": true,
+        "alwaysStrict": true,
+        "target": "ES2019",
+        "lib": ["es2019", "dom"],
+    }
+}
