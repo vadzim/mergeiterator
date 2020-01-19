@@ -5,7 +5,9 @@ import { type AnyIterable } from "type-any-iterable"
 /**
  * Merges async or sync iterables into async one.
  */
-export async function* merge<T, ReturnT>(sequences: AnyIterable<AnyIterable<T>, ReturnT>): AsyncGenerator<T, ReturnT, void> {
+export async function* merge<T, ReturnT>(
+	sequences: AnyIterable<AnyIterable<T>, ReturnT>,
+): AsyncGenerator<T, ReturnT, void> {
 	const rootIterator = getIterator(await sequences)
 	const ticks = [readRootIterator]
 	const getters = []
@@ -175,7 +177,8 @@ const getIterator = (iterable: any): any => {
 	throw new Error("impossible")
 }
 
-const readIterator = iterator => PromiseTry(() => iterator.next()).then(({ done, value }) => Promise.resolve(value).then(v => ({ done, value: v })))
+const readIterator = iterator =>
+	PromiseTry(() => iterator.next()).then(({ done, value }) => Promise.resolve(value).then(v => ({ done, value: v })))
 
 const stopIterator = iterator =>
 	PromiseTry(() =>
