@@ -53,7 +53,7 @@ describe("mergeiterator", () => {
 		await expect(it.next()).resolves.toEqual({ value: 5, done: false }) // 1110 #5.3
 		await expect(it.next()).resolves.toEqual({ value: 3, done: false }) // 1332 #3.5
 		await expect(it.next()).resolves.toEqual({ value: 5, done: false }) // 1665 #5.4
-		await expect(it.next()).rejects.toBe(10) // 177
+		await expect(it.next()).rejects.toBe(10) // 1777
 		await expect(it.next()).resolves.toEqual({ value: undefined, done: true })
 		await expect(it.next()).resolves.toEqual({ value: undefined, done: true })
 		await done.promise
@@ -96,7 +96,7 @@ describe("mergeiterator", () => {
 		await expect(v.shift()).resolves.toEqual({ value: 5, done: false }) // 1110 #5.3
 		await expect(v.shift()).resolves.toEqual({ value: 3, done: false }) // 1332 #3.5
 		await expect(v.shift()).resolves.toEqual({ value: 5, done: false }) // 1665 #5.4
-		await expect(v.shift()).rejects.toBe(10) // 177
+		await expect(v.shift()).rejects.toBe(10) // 1777
 		await expect(v.shift()).resolves.toEqual({ value: undefined, done: true })
 		await expect(v.shift()).resolves.toEqual({ value: undefined, done: true })
 		await done.promise
@@ -117,7 +117,7 @@ describe("mergeiterator", () => {
 				})(),
 			)
 			await expect(it.next()).resolves.toEqual({ done: false, value: 13 })
-			await expect(it.next()).resolves.toEqual({ done: true, value: 42 })
+			await expect(it.next()).resolves.toEqual({ done: true, value: undefined })
 		})
 
 		test("merges empty list", async () => {
@@ -134,7 +134,6 @@ describe("mergeiterator", () => {
 						yield (function*() {})()
 						yield (async function*() {
 							await Promise.resolve()
-							return "rejected"
 						})()
 						yield []
 						yield []
@@ -143,7 +142,7 @@ describe("mergeiterator", () => {
 				).next(),
 			).resolves.toEqual({
 				done: true,
-				value: "ok",
+				value: undefined,
 			})
 		})
 
@@ -327,13 +326,16 @@ describe("mergeiterator", () => {
 			if (c !== 0) {
 				throw new Error(`return() failed: ${c}`)
 			}
-			if (maxc !== (n + 3) / 2) {
-				throw new Error(`wrong number of iterators created: ${maxc}`)
+			if (maxc > (n - 1) / 2 + 5) {
+				throw new Error(`too many iterators created: ${maxc}`)
 			}
 		})
 
 		function take10OfInfiniteMerge(cb) {
-			return take(10, merge(infiniteIterables(cb))).then(x => x.join(",") === "0,1,3,2,5,6,4,7,10,12")
+			return take(10, merge(infiniteIterables(cb)))
+				.then(x => [...x].sort((a, b) => a - b))
+				.then(x => x.join(","))
+				.then(x => x === "1,2,3,4,5,6,7,8,10,12")
 		}
 
 		test("throwing on child return", async () => {
@@ -434,12 +436,9 @@ function* infiniteIterable(n, cb) {
 	}
 }
 
-async function* infiniteIterables(cb: Function = () => {}) {
+function* infiniteIterables(cb: Function = () => {}) {
 	try {
 		yield* cb("root-start") || []
-		yield* cb("root-yielding", 0) || []
-		yield [0]
-		yield* cb("root-yielded", 0) || []
 		for (let n = 0; ; ++n) {
 			yield* cb("root-yielding", n + 1) || []
 			yield infiniteIterable(n, cb)
@@ -452,9 +451,7 @@ async function* infiniteIterables(cb: Function = () => {}) {
 
 async function take(n, iterable) {
 	const result = []
-	if (n <= 0) {
-		await iterable.return()
-	} else {
+	if (n > 0) {
 		for await (const x of iterable) {
 			result.push(x)
 			if (result.length >= n) break
@@ -462,3 +459,15 @@ async function take(n, iterable) {
 	}
 	return result
 }
+
+/*
+1		2		3		4		6		5		8		12		10	7
+
+1		3		5		7		9		11
+2		6		10	14	18		22
+4		12		20	28	36	44
+8		24	40	56	72	88
+16	48	80
+32	96
+64
+*/

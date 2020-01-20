@@ -5,9 +5,7 @@ import { type AnyIterable } from "type-any-iterable"
 /**
  * Merges async or sync iterables into async one.
  */
-export async function* merge<T, ReturnT>(
-	sequences: AnyIterable<AnyIterable<T>, ReturnT>,
-): AsyncGenerator<T, ReturnT, void> {
+export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncIterator<T> {
 	//
 	const rootIterator = getIterator(await sequences)
 	const ticks = [readRootIterator]
@@ -16,7 +14,6 @@ export async function* merge<T, ReturnT>(
 	let mergeDone = false
 	let onStateChanged // should be called whenever values used in the main `while` loop have been changed. These are: iteratorsCount, ticks and getters
 	let normalReturn = true
-	let rootReturnResult
 
 	try {
 		while (iteratorsCount > 0) {
@@ -41,12 +38,8 @@ export async function* merge<T, ReturnT>(
 			while (getters.length > 0) getters.shift()()
 			// There is no chance to return a value out of finally block if .return() is called.
 			// eslint-disable-next-line no-unsafe-finally
-			return (rootReturnResult: any)
 		}
 	}
-
-	// istanbul ignore next
-	throw new Error("impossible")
 
 	function setOnStateChanged(resolve) {
 		onStateChanged = resolve
@@ -54,8 +47,7 @@ export async function* merge<T, ReturnT>(
 
 	function stopRootIterator() {
 		stopIterator(rootIterator).then(
-			({ done, value }) => {
-				if (done) rootReturnResult = value
+			() => {
 				iteratorsCount--
 				onStateChanged()
 			},
@@ -95,7 +87,6 @@ export async function* merge<T, ReturnT>(
 		readIterator(rootIterator).then(
 			({ done, value }) => {
 				if (done) {
-					rootReturnResult = value
 					iteratorsCount--
 					onStateChanged()
 					return

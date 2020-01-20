@@ -2,6 +2,10 @@ enhancement:
 
 * added performance test
 
+changes:
+
+* remove return iterator value support
+
 ## 1.3.1
 
 fix:

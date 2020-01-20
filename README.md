@@ -45,7 +45,7 @@ If some iterable yields a promise, its value will be used, not a promise itself.
 
 If some iterable throws an error, that error will be redirected to a caller and other iterables will be closed.
 
-The return value of `merge` is the return value of the list of iterables. Return values of merged iterables are discarded.
+Return values of iterables are discarded.
 
 ## API
 
