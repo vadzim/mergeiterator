@@ -19,9 +19,10 @@
     "src"
   ],
   "scripts": {
-    "test": "node --expose-gc node_modules/.bin/jest",
+    "test": "jest",
     "coverage": "npm test -- --coverage --collectCoverageFrom=src/**/*.js",
     "lint": "eslint . --ext .js,.ts",
+    "types": "tsc --noEmit",
     "flow": "flow check",
     "flowinstall": "flow-typed install --ignoreDeps=dev; flow-typed install jest",
     "docs": "documentation --config documentation.yml readme src --section=API",
@@ -30,7 +31,7 @@
     "flowbuild": "flow-copy-source src dist",
     "prebuild": "npm run docs && npm run clean && npm run flowbuild",
     "build": "babel src -d dist",
-    "preversion": "npm run flowinstall && npm run lint && npm test && npm run build",
+    "preversion": "npm run flowinstall && npm run lint && npm run types && npm test && npm run build",
     "postpublish": "git push origin master --follow-tags",
     "codecov": "codecov --token=$CODECOV_TOKEN"
   },
