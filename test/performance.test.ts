@@ -80,7 +80,9 @@ test("performance", async () => {
 	// eslint-disable-next-line no-console
 	console.log({ objectPerformance, numberPerformance })
 
-	expect(objectPerformance !== numberPerformance).toBe(true)
-	expect(objectPerformance > 0.9 && objectPerformance < 3.8).toBe(true)
-	expect(numberPerformance > 0.9 && numberPerformance < 5.2).toBe(true)
+	expect(objectPerformance).not.toBe(numberPerformance)
+	expect(objectPerformance).toBeGreaterThan(0.9)
+	expect(objectPerformance).toBeLessThan(2.6)
+	expect(numberPerformance).toBeGreaterThan(0.9)
+	expect(numberPerformance).toBeLessThan(3.3)
 })

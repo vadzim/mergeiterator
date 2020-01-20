@@ -41,10 +41,10 @@ describe("mergeiterator", () => {
 			],
 		])
 		await expect(it.next()).resolves.toEqual({ value: 1, done: false }) // 0ms
-		await expect(it.next()).resolves.toEqual({ value: 2, done: false }) // 0
 		await expect(it.next()).resolves.toEqual({ value: 3, done: false }) // 0 #3.1
 		await expect(it.next()).resolves.toEqual({ value: 2, done: false }) // 0
 		await expect(it.next()).resolves.toEqual({ value: 5, done: false }) // 0 #5.1
+		await expect(it.next()).resolves.toEqual({ value: 2, done: false }) // 0
 		await expect(it.next()).resolves.toEqual({ value: 3, done: false }) // 333 #3.2
 		await expect(it.next()).resolves.toEqual({ value: 5, done: false }) // 555 #5.2
 		await expect(it.next()).resolves.toEqual({ value: 3, done: false }) // 666 #3.3
@@ -84,10 +84,10 @@ describe("mergeiterator", () => {
 			v[i] = it.next()
 		}
 		await expect(v.shift()).resolves.toEqual({ value: 1, done: false }) // 0ms
-		await expect(v.shift()).resolves.toEqual({ value: 2, done: false }) // 0
 		await expect(v.shift()).resolves.toEqual({ value: 3, done: false }) // 0 #3.1
 		await expect(v.shift()).resolves.toEqual({ value: 2, done: false }) // 0
 		await expect(v.shift()).resolves.toEqual({ value: 5, done: false }) // 0 #5.1
+		await expect(v.shift()).resolves.toEqual({ value: 2, done: false }) // 0
 		await expect(v.shift()).resolves.toEqual({ value: 3, done: false }) // 333 #3.2
 		await expect(v.shift()).resolves.toEqual({ value: 5, done: false }) // 555 #5.2
 		await expect(v.shift()).resolves.toEqual({ value: 3, done: false }) // 666 #3.3

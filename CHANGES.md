@@ -1,10 +1,11 @@
 enhancement:
 
 * added performance test
+* the code has been rewritten, performance increased by ~ 40%
 
 changes:
 
-* remove return iterator value support
+* remove return generator value support
 
 ## 1.3.1
 
