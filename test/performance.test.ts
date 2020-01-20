@@ -82,7 +82,7 @@ test("performance", async () => {
 
 	expect(objectPerformance).not.toBe(numberPerformance)
 	expect(objectPerformance).toBeGreaterThan(0.9)
-	expect(objectPerformance).toBeLessThan(2.6)
+	expect(objectPerformance).toBeLessThan(2.8)
 	expect(numberPerformance).toBeGreaterThan(0.9)
-	expect(numberPerformance).toBeLessThan(3.3)
+	expect(numberPerformance).toBeLessThan(3.8)
 })
