@@ -1,4 +1,4 @@
-import merge from "../src/index.js"
+import merge from "../src/index"
 
 async function* concat<T>(sequences: AsyncIterable<AsyncIterable<T>>): AsyncIterable<T> {
 	for await (const sequence of sequences) {

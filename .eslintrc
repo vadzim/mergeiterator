@@ -40,7 +40,9 @@
         "no-plusplus": "off",
         "require-yield": "off",
         "no-use-before-define": "off",
-        "import/extensions": ["error", "ignorePackages"],
+        "@typescript-eslint/no-use-before-define": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-empty-function": "off",
       }
     },
   ],
@@ -64,6 +66,5 @@
     "no-plusplus": "off",
     "require-yield": "off",
     "no-use-before-define": "off",
-    "import/extensions": ["error", "ignorePackages"],
   }
 }

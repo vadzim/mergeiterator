@@ -1,6 +1,6 @@
 // @flow
 
-import merge from "../src/index.js"
+import merge from "../src/index"
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -24,7 +24,7 @@ async function* repeat(value, count = Infinity, interval = 0, onDone = undefined
 }
 
 describe("mergeiterator", () => {
-	test("example does not fail", () => import("../example/example.js"))
+	test("example does not fail", () => import("../example/example"))
 
 	test("test time intervals", async () => {
 		const done = new Deferred()
