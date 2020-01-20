@@ -331,16 +331,49 @@ describe("mergeiterator", () => {
 			}
 		})
 
-		function take10OfInfiniteMerge(cb) {
-			return take(10, merge(infiniteIterables(cb)))
-				.then(x => [...x].sort((a, b) => a - b))
-				.then(x => x.join(","))
-				.then(x => x === "1,2,3,4,5,6,7,8,10,12")
+		function take10OfInfiniteMerge(cb = () => {}) {
+			let root = 0
+			let child = 0
+			return take(
+				10,
+				merge(
+					infiniteIterables((...args) => {
+						switch (args[0]) {
+							case "root-start":
+								root++
+								break
+							case "root-return":
+								root--
+								break
+							case "child-start":
+								child++
+								break
+							case "child-return":
+								child--
+								break
+							default:
+								break
+						}
+						return cb(...args)
+					}),
+				),
+			)
+				.finally(() => {
+					expect(root).toBe(0)
+					expect(child).toBe(0)
+				})
+				.then(data => {
+					expect([[1, 2, 3, 4, 5, 6, 7, 8, 10, 12], [1, 2, 3, 4, 5, 6, 8, 10, 12, 14]]).toContainEqual([...data].sort((a, b) => a - b))
+				})
 		}
+
+		test("take 10 of infinite", async () => {
+			await take10OfInfiniteMerge()
+		})
 
 		test("throwing on child return", async () => {
 			await expect(
-				take10OfInfiniteMerge(msg => {
+				take10OfInfiniteMerge(function*(msg) {
 					if (msg === "child-return") {
 						throw new Error("child-return")
 					}
@@ -348,9 +381,20 @@ describe("mergeiterator", () => {
 			).rejects.toThrow("child-return")
 		})
 
+		test("rejecting on child return", async () => {
+			await expect(
+				take10OfInfiniteMerge(function*(msg) {
+					if (msg === "child-return") {
+						return Promise.reject(new Error("child-return"))
+					}
+					return undefined
+				}),
+			).rejects.toThrow("child-return")
+		})
+
 		test("throwing on root return", async () => {
 			await expect(
-				take10OfInfiniteMerge(msg => {
+				take10OfInfiniteMerge(function*(msg) {
 					if (msg === "root-return") {
 						throw new Error("root-return")
 					}
@@ -358,62 +402,84 @@ describe("mergeiterator", () => {
 			).rejects.toThrow("root-return")
 		})
 
+		test("rejecting on root return", async () => {
+			await expect(
+				take10OfInfiniteMerge(function*(msg) {
+					if (msg === "root-return") {
+						return Promise.reject(new Error("root-return"))
+					}
+					return undefined
+				}),
+			).rejects.toThrow("root-return")
+		})
+
 		test("throwing in child", async () => {
 			await expect(
-				take10OfInfiniteMerge((msg, n) => {
+				take10OfInfiniteMerge(function*(msg, n) {
 					if (msg === "child-yielding" && n === 7) {
 						throw new Error("child-yielding")
 					}
 				}),
 			).rejects.toThrow("child-yielding")
+		})
+
+		test("rejecting in child", async () => {
+			await expect(
+				take10OfInfiniteMerge(function*(msg, n) {
+					if (msg === "child-yielding" && n === 7) {
+						yield Promise.reject(new Error("child-yielding"))
+					}
+				}),
+			).rejects.toThrow("child-yielding")
+		})
+
+		test("throwing in root", async () => {
+			await expect(
+				take10OfInfiniteMerge(function*(msg, n) {
+					if (msg === "root-yielding" && n === 3) {
+						throw new Error("root-yielding")
+					}
+				}),
+			).rejects.toThrow("root-yielding")
+		})
+
+		test("rejecting in root", async () => {
+			await expect(
+				take10OfInfiniteMerge(function*(msg, n) {
+					if (msg === "root-yielding" && n === 3) {
+						yield Promise.reject(new Error("root-yielding"))
+					}
+				}),
+			).rejects.toThrow("root-yielding")
 		})
 
 		test("throwing in child and yield in root return", async () => {
-			let returnCalled = false
-			let thrown = false
 			await expect(
-				take10OfInfiniteMerge((msg, n) => {
+				take10OfInfiniteMerge(function*(msg, n) {
 					if (msg === "child-yielding" && n === 7) {
-						thrown = true
 						throw new Error("child-yielding")
 					}
 					if (msg === "root-return") {
-						returnCalled = true
-						return [[42]]
+						yield [42]
 					}
-					return []
 				}),
 			).rejects.toThrow("child-yielding")
-			expect(returnCalled).toBe(true)
-			expect(thrown).toBe(true)
 		})
 
 		test("yield in root return", async () => {
-			let returnCalled = false
-			await expect(
-				take10OfInfiniteMerge(msg => {
-					if (msg === "root-return") {
-						returnCalled = true
-						return [[42]]
-					}
-					return []
-				}),
-			).resolves.toBe(true)
-			expect(returnCalled).toBe(true)
+			await take10OfInfiniteMerge(function*(msg) {
+				if (msg === "root-return") {
+					yield [42]
+				}
+			})
 		})
 
 		test("yield in child return", async () => {
-			let returnCalled = false
-			await expect(
-				take10OfInfiniteMerge(msg => {
-					if (msg === "child-return") {
-						returnCalled = true
-						return [42]
-					}
-					return []
-				}),
-			).resolves.toBe(true)
-			expect(returnCalled).toBe(true)
+			await take10OfInfiniteMerge(function*(msg) {
+				if (msg === "child-return") {
+					yield 42
+				}
+			})
 		})
 	})
 })
@@ -432,7 +498,11 @@ function* infiniteIterable(n, cb) {
 			yield* cb("child-yielded", x, n) || []
 		}
 	} finally {
-		yield* cb("child-return", n) || []
+		const ret = yield* cb("child-return", n) || []
+		if (ret !== undefined) {
+			// eslint-disable-next-line no-unsafe-finally
+			return ret
+		}
 	}
 }
 
@@ -445,7 +515,11 @@ function* infiniteIterables(cb: Function = () => {}) {
 			yield* cb("root-yielded", n + 1) || []
 		}
 	} finally {
-		yield* cb("root-return") || []
+		const ret = yield* cb("root-return") || []
+		if (ret !== undefined) {
+			// eslint-disable-next-line no-unsafe-finally
+			return ret
+		}
 	}
 }
 
