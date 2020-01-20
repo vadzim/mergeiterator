@@ -1,7 +1,5 @@
 import merge from "../src/index.js"
 
-declare function gc(): void
-
 async function* concat<T>(sequences: AsyncIterable<AsyncIterable<T>>): AsyncIterable<T> {
 	for await (const sequence of sequences) {
 		for await (const item of sequence) {
@@ -48,28 +46,11 @@ function id(x: number): number {
 	return x
 }
 
-const fixed2 = (n: number): number => +n.toFixed(2)
-
-const heapUsed = (): number => fixed2(process.memoryUsage().heapUsed / 2 ** 20)
-
-async function performance<T>(
-	merger: (sequences: AsyncIterable<AsyncIterable<T>>) => AsyncIterable<T>,
-	wrapper: (x: number) => T,
-): Promise<{ time: number; sum: number; gc1: number; gc2: number; gc3: number }> {
-	gc()
-	const gc1 = heapUsed()
-	const { time, sum } = await measure(merger, wrapper)
-	const gc2 = heapUsed()
-	gc()
-	const gc3 = heapUsed()
-	return { time, sum, gc1, gc2, gc3 }
-}
-
 test("performance", async () => {
-	const concatWrap = await performance(concat, wrap)
-	const concatId = await performance(concat, id)
-	const mergeWrap = await performance(merge, wrap)
-	const mergeId = await performance(merge, id)
+	const concatWrap = await measure(concat, wrap)
+	const concatId = await measure(concat, id)
+	const mergeWrap = await measure(merge, wrap)
+	const mergeId = await measure(merge, id)
 
 	expect(mergeWrap.sum).toBe(concatWrap.sum)
 	expect(mergeId.sum).toBe(concatId.sum)
