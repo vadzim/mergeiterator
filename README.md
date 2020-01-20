@@ -62,6 +62,6 @@ Merges async or sync iterables into async one.
 
 #### Parameters
 
--   `sequences` **AnyIterable&lt;AnyIterable&lt;T>, ReturnT>** 
+-   `sequences` **AnyIterable&lt;AnyIterable&lt;T>>** 
 
-Returns **AsyncGenerator&lt;T, ReturnT, void>** 
+Returns **AsyncGenerator&lt;T, any, any>** 
