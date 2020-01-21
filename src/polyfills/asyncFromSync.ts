@@ -64,9 +64,9 @@ export function compatAsyncFromSync<T>(iterable: Iterable<T | PromiseLike<T>>): 
 
 export function compatForAwaitOfSyncWrapper<T>(
 	iterable: Iterable<T | PromiseLike<T>> | AsyncIterable<T>,
-): Iterable<T | PromiseLike<T>> | AsyncIterable<T> {
+): AsyncIterable<T> {
 	if (Symbol.asyncIterator in iterable) {
-		return iterable
+		return iterable as AsyncIterable<T>
 	}
 	return compatAsyncFromSync((iterable as unknown) as Iterable<T | PromiseLike<T>>)
 }
@@ -104,8 +104,10 @@ async function isEngineValid() {
 		for await (const x of (function*() {
 			try {
 				yield Promise.reject()
+				// istanbul ignore next
 				checks = Infinity
 			} finally {
+				// istanbul ignore next
 				checks--
 			}
 			// eslint-disable-next-line no-empty
@@ -119,8 +121,10 @@ async function isEngineValid() {
 			yield* (function*() {
 				try {
 					yield Promise.reject()
+					// istanbul ignore next
 					checks = Infinity
 				} finally {
+					// istanbul ignore next
 					checks--
 				}
 			})()
@@ -132,6 +136,7 @@ async function isEngineValid() {
 	return checks === 0
 }
 
+// istanbul ignore next
 async function checkEngine() {
 	setCompatHandlers()
 	if (await isEngineValid()) {
