@@ -1,6 +1,7 @@
 // @flow
 
 import { type AnyIterable } from "type-any-iterable"
+import { forAwaitOfSyncWrapper } from "./polyfills/asyncFromSync"
 
 /**
  * Merges async or sync iterables into async one.
@@ -55,7 +56,7 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 	async function readRoot() {
 		try {
 			iteratorsCount++
-			for await (const sequence of await (sequences: any)) {
+			for await (const sequence of forAwaitOfSyncWrapper(await (sequences: any))) {
 				if (mergeDone) {
 					break
 				}
@@ -81,7 +82,7 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 	async function readChild(sequence) {
 		try {
 			iteratorsCount++
-			for await (const value of sequence) {
+			for await (const value of forAwaitOfSyncWrapper(sequence)) {
 				values.push(value)
 				onStateChanged()
 				await dataNeeded

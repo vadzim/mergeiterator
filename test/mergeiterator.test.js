@@ -436,27 +436,25 @@ describe("mergeiterator", () => {
 			).rejects.toThrow("root-yielding")
 		})
 
-		if (+process.version.match(/\d+/)?.[0] >= 14) {
-			test("rejecting in child", async () => {
-				await expect(
-					take10OfInfiniteMerge(function*(msg, n) {
-						if (msg === "child-yielding" && n === 7) {
-							yield Promise.reject(new Error("child-yielding"))
-						}
-					}),
-				).rejects.toThrow("child-yielding")
-			})
+		test("rejecting in child", async () => {
+			await expect(
+				take10OfInfiniteMerge(function*(msg, n) {
+					if (msg === "child-yielding" && n === 7) {
+						yield Promise.reject(new Error("child-yielding"))
+					}
+				}),
+			).rejects.toThrow("child-yielding")
+		})
 
-			test("rejecting in root", async () => {
-				await expect(
-					take10OfInfiniteMerge(function*(msg, n) {
-						if (msg === "root-yielding" && n === 3) {
-							yield Promise.reject(new Error("root-yielding"))
-						}
-					}),
-				).rejects.toThrow("root-yielding")
-			})
-		}
+		test("rejecting in root", async () => {
+			await expect(
+				take10OfInfiniteMerge(function*(msg, n) {
+					if (msg === "root-yielding" && n === 3) {
+						yield Promise.reject(new Error("root-yielding"))
+					}
+				}),
+			).rejects.toThrow("root-yielding")
+		})
 
 		test("throwing in child and yield in root return", async () => {
 			await expect(

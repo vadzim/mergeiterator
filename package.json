@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "test": "jest",
-    "coverage": "npm test -- --coverage --collectCoverageFrom=src/**/*.js",
+    "coverage": "npm test -- --coverage --collectCoverageFrom=src/**/*.[jt]s",
     "lint": "eslint . --ext .js,.ts",
     "types": "tsc --noEmit",
     "flow": "flow check",
