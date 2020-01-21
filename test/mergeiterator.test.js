@@ -331,7 +331,7 @@ describe("mergeiterator", () => {
 			}
 		})
 
-		function take10OfInfiniteMerge(cb = () => {}) {
+		function take10OfInfiniteMerge(cb = () => {}, checkArray = true) {
 			let root = 0
 			let child = 0
 			return take(
@@ -362,11 +362,15 @@ describe("mergeiterator", () => {
 					expect(root).toBe(0)
 					expect(child).toBe(0)
 				})
+				.then(data => [...data].sort((a, b) => a - b))
 				.then(data => {
-					expect([
-						[1, 2, 3, 4, 5, 6, 7, 8, 10, 12],
-						[1, 2, 3, 4, 5, 6, 8, 10, 12, 14],
-					]).toContainEqual([...data].sort((a, b) => a - b))
+					if (checkArray) {
+						expect([
+							[1, 2, 3, 4, 5, 6, 7, 8, 10, 12],
+							[1, 2, 3, 4, 5, 6, 8, 10, 12, 14],
+						]).toContainEqual(data)
+					}
+					return data
 				})
 		}
 
@@ -384,34 +388,12 @@ describe("mergeiterator", () => {
 			).rejects.toThrow("child-return")
 		})
 
-		test("rejecting on child return", async () => {
-			await expect(
-				take10OfInfiniteMerge(function*(msg) {
-					if (msg === "child-return") {
-						return Promise.reject(new Error("child-return"))
-					}
-					return undefined
-				}),
-			).rejects.toThrow("child-return")
-		})
-
 		test("throwing on root return", async () => {
 			await expect(
 				take10OfInfiniteMerge(function*(msg) {
 					if (msg === "root-return") {
 						throw new Error("root-return")
 					}
-				}),
-			).rejects.toThrow("root-return")
-		})
-
-		test("rejecting on root return", async () => {
-			await expect(
-				take10OfInfiniteMerge(function*(msg) {
-					if (msg === "root-return") {
-						return Promise.reject(new Error("root-return"))
-					}
-					return undefined
 				}),
 			).rejects.toThrow("root-return")
 		})
@@ -454,6 +436,16 @@ describe("mergeiterator", () => {
 					}
 				}),
 			).rejects.toThrow("root-yielding")
+		})
+
+		test("long calc in root", async () => {
+			await expect(
+				take10OfInfiniteMerge(function*(msg, n) {
+					if (msg === "root-yielding" && n === 3) {
+						yield new Promise(resolve => setTimeout(resolve, 500, []))
+					}
+				}, false),
+			).resolves.toEqual([1, 2, 3, 5, 6, 7, 9, 10, 14, 18])
 		})
 
 		test("throwing in child and yield in root return", async () => {

@@ -1,64 +1,6 @@
-export class AsyncFromSyncIterator<T, TReturn, TNext> implements AsyncIterator<T, TReturn | undefined, TNext> {
-	constructor(
-		private it: Iterator<T | PromiseLike<T>, TReturn | undefined | PromiseLike<TReturn | undefined>, TNext>,
-	) {}
-
-	next(...args: [] | [TNext]): Promise<IteratorResult<T, TReturn | undefined>> {
-		try {
-			return this.await(this.it.next(...args))
-		} catch (error) {
-			return Promise.reject(error)
-		}
-	}
-
-	throw(e: unknown): Promise<IteratorResult<T, TReturn | undefined>> {
-		try {
-			return this.it.throw === undefined ? Promise.reject(e) : this.await(this.it.throw(e))
-		} catch (error) {
-			return Promise.reject(error)
-		}
-	}
-
-	return(
-		value: TReturn | undefined | PromiseLike<TReturn | undefined>,
-	): Promise<IteratorResult<T, TReturn | undefined>> {
-		return Promise.resolve(value).then(
-			(resolved: TReturn | undefined) => {
-				if (this.it.return === undefined) {
-					return { done: true, value: resolved }
-				}
-				const rec = this.it.return(resolved)
-				return rec.done
-					? Promise.resolve(rec.value).then(ret => ({ done: true, value: ret }))
-					: Promise.resolve(rec.value).then(ret => ({ done: false, value: ret }))
-			},
-			error => {
-				if (this.it.return === undefined) {
-					return Promise.reject(error)
-				}
-				const rec = this.it.return()
-				return Promise.resolve(rec.value).then(() => Promise.reject(error))
-			},
-		)
-	}
-
-	private await(
-		rec: IteratorResult<T | PromiseLike<T>, TReturn | undefined | PromiseLike<TReturn | undefined>>,
-	): Promise<IteratorResult<T, TReturn | undefined>> {
-		return rec.done
-			? Promise.resolve(rec.value).then(ret => ({ done: true, value: ret }))
-			: Promise.resolve(rec.value).then(
-					ret => ({ done: false, value: ret }),
-					error => this.return(undefined).then(() => Promise.reject(error)),
-			  )
-	}
-}
-
-export function compatAsyncFromSync<T>(iterable: Iterable<T | PromiseLike<T>>): AsyncIterable<T> {
-	return {
-		[Symbol.asyncIterator]() {
-			return new AsyncFromSyncIterator(iterable[Symbol.iterator]())
-		},
+export async function* compatAsyncFromSync<T>(iterable: Iterable<T | PromiseLike<T>>): AsyncIterable<T> {
+	for (const x of iterable) {
+		yield await x
 	}
 }
 
