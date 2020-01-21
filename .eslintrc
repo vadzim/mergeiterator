@@ -8,7 +8,6 @@
   ],
   "plugins": [
     "flowtype",
-    "flowtype-errors",
   ],
   "overrides": [
     {
@@ -24,7 +23,6 @@
         "@typescript-eslint",
       ],
       "rules": {
-        "flowtype-errors/show-errors": "error",
         "no-restricted-syntax": [
           "error",
           "WithStatement",
@@ -44,6 +42,8 @@
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/no-empty-function": "off",
         "no-useless-constructor": "off",
+        "import/no-unresolved": "off",
+        "import/extensions": "off",
       }
     },
   ],
@@ -51,7 +51,6 @@
     "jest": true,
   },
   "rules": {
-    "flowtype-errors/show-errors": "error",
     "no-restricted-syntax": [
       "error",
       "WithStatement",
@@ -67,5 +66,7 @@
     "no-plusplus": "off",
     "require-yield": "off",
     "no-use-before-define": "off",
+    "import/no-unresolved": "off",
+    "import/extensions": "off",
   }
 }

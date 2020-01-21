@@ -31,7 +31,7 @@
     "flowbuild": "flow-copy-source src dist",
     "prebuild": "npm run docs && npm run clean && npm run flowbuild",
     "build": "babel src -d dist",
-    "preversion": "npm run flowinstall && npm run lint && npm run types && npm test && npm run build",
+    "preversion": "npm run flowinstall && npm run lint && npm run flow && npm run types && npm test && npm run build",
     "postpublish": "git push origin master --follow-tags",
     "codecov": "codecov --token=$CODECOV_TOKEN"
   },

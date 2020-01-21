@@ -1,6 +1,6 @@
 // @flow
 
-import merge from "../src/index"
+import merge from "../src"
 
 async function DoIt() {
 	for await (const v of merge([

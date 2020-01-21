@@ -1,18 +1,16 @@
-// @flow
-
-import { type AnyIterable } from "type-any-iterable"
+import { AnyIterable } from "type-any-iterable"
 import { forAwaitOfSyncWrapper } from "./polyfills/asyncFromSync"
 
 /**
  * Merges async or sync iterables into async one.
  */
-export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGenerator<T, *, *> {
+export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGenerator<T> {
 	//
 	let onDataNeeded = () => {}
 	let dataNeeded = new Promise(setOnDataNeeded)
 	let onStateChanged = () => {} // should be called whenever values used in the main `while` loop have been changed. These are: iteratorsCount > 0 and values
 
-	const values = []
+	const values: (T | PromiseLike<never>)[] = []
 	let iteratorsCount = 0
 	let mergeDone = false
 	let normalReturn = true
@@ -22,10 +20,11 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 	try {
 		while (iteratorsCount > 0 || values.length > 0) {
 			if (values.length > 0) {
-				if (typeof values[0] === "object" && values[0] && typeof values[0].then === "function") {
-					yield await (values.shift(): any)
+				const value = values.shift()
+				if (typeof value === "object" && value && "then" in value && typeof value.then === "function") {
+					yield await value
 				} else {
-					yield values.shift()
+					yield value as T
 				}
 			} else {
 				const oldOnDataNeeded = onDataNeeded
@@ -56,11 +55,11 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 	async function readRoot() {
 		try {
 			iteratorsCount++
-			for await (const sequence of forAwaitOfSyncWrapper(await (sequences: any))) {
+			for await (const sequence of forAwaitOfSyncWrapper(await sequences)) {
 				if (mergeDone) {
 					break
 				}
-				readChild(sequence)
+				readChild(sequence as Iterable<T | PromiseLike<T>> | AsyncIterable<T>)
 				if (values.length > 0) {
 					await dataNeeded
 				}
@@ -79,7 +78,7 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 		}
 	}
 
-	async function readChild(sequence) {
+	async function readChild(sequence: Iterable<T | PromiseLike<T>> | AsyncIterable<T>) {
 		try {
 			iteratorsCount++
 			for await (const value of forAwaitOfSyncWrapper(sequence)) {
@@ -101,15 +100,18 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 		}
 	}
 
-	function setOnStateChanged(resolve) {
+	function setOnStateChanged(resolve: () => void) {
 		onStateChanged = resolve
 	}
 
-	function setOnDataNeeded(resolve) {
+	function setOnDataNeeded(resolve: () => void) {
 		onDataNeeded = resolve
 	}
 }
 
-function getError(error): any {
-	return { then: (resolve, reject) => reject(error) }
+function getError(error: unknown): PromiseLike<never> {
+	return {
+		then: (resolve: (value: never) => PromiseLike<never>, reject: (error: unknown) => PromiseLike<never>) =>
+			reject(error),
+	}
 }

@@ -1,0 +1,8 @@
+// @flow
+
+import { type AnyIterable } from "type-any-iterable"
+
+declare function merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGenerator<T, *, *>
+
+// eslint-disable-next-line import/no-default-export
+export { merge as default }
