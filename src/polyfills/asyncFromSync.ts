@@ -1,4 +1,4 @@
-export class AsyncFromSyncIterator<T, TReturn, TNext> implements AsyncGenerator<T, TReturn | undefined, TNext> {
+export class AsyncFromSyncIterator<T, TReturn, TNext> implements AsyncIterator<T, TReturn | undefined, TNext> {
 	constructor(
 		private it: Iterator<T | PromiseLike<T>, TReturn | undefined | PromiseLike<TReturn | undefined>, TNext>,
 	) {}
@@ -40,10 +40,6 @@ export class AsyncFromSyncIterator<T, TReturn, TNext> implements AsyncGenerator<
 				return Promise.resolve(rec.value).then(() => Promise.reject(error))
 			},
 		)
-	}
-
-	[Symbol.asyncIterator](): AsyncGenerator<T, TReturn | undefined, TNext> {
-		return this
 	}
 
 	private await(
