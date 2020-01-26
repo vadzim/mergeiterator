@@ -388,12 +388,34 @@ describe("mergeiterator", () => {
 			).rejects.toThrow("child-return")
 		})
 
+		test("rejecting on child return", async () => {
+			await expect(
+				take10OfInfiniteMerge(function*(msg) {
+					if (msg === "child-return") {
+						return Promise.reject(new Error("child-return"))
+					}
+					return undefined
+				}),
+			).rejects.toThrow("child-return")
+		})
+
 		test("throwing on root return", async () => {
 			await expect(
 				take10OfInfiniteMerge(function*(msg) {
 					if (msg === "root-return") {
 						throw new Error("root-return")
 					}
+				}),
+			).rejects.toThrow("root-return")
+		})
+
+		test("rejecting on root return", async () => {
+			await expect(
+				take10OfInfiniteMerge(function*(msg) {
+					if (msg === "root-return") {
+						return Promise.reject(new Error("root-return"))
+					}
+					return undefined
 				}),
 			).rejects.toThrow("root-return")
 		})

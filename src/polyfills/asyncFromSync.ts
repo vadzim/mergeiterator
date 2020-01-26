@@ -1,6 +1,21 @@
 export async function* compatAsyncFromSync<T>(iterable: Iterable<T | PromiseLike<T>>): AsyncIterable<T> {
-	for (const x of iterable) {
-		yield await x
+	const it = iterable[Symbol.iterator]()
+	let needToClose
+	try {
+		for (;;) {
+			needToClose = false
+			const rec = it.next()
+			needToClose = true
+			if (rec.done) {
+				needToClose = false
+				return await rec.value
+			}
+			yield await rec.value
+		}
+	} finally {
+		if (needToClose) {
+			await it.return?.().value
+		}
 	}
 }
 
