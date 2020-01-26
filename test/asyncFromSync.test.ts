@@ -15,11 +15,6 @@ async function toArray<T>(it: AsyncIterable<T>): Promise<T[]> {
 	return ret
 }
 
-function next<T>(it: AsyncIterator<T>): AsyncIterator<T> {
-	it.next()
-	return it
-}
-
 describe("asyncFromSync", () => {
 	test("setDummyHandlers does not throw", () => {
 		setDummyHandlers()
