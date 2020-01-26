@@ -1,3 +1,7 @@
+fix:
+
+* proper closing sync generators returning rejected promise
+
 ## 1.4.0
 
 enhancement:
