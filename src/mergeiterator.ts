@@ -20,12 +20,7 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 	try {
 		while (iteratorsCount > 0 || values.length > 0) {
 			if (values.length > 0) {
-				const value = values.shift()
-				if (typeof value === "object" && value && "then" in value && typeof value.then === "function") {
-					yield await value
-				} else {
-					yield value as T
-				}
+				yield values.shift() as T
 			} else {
 				const oldOnDataNeeded = onDataNeeded
 
