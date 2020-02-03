@@ -11,7 +11,7 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 	let onStateChanged = () => {} // should be called whenever values used in the main `while` loop have been changed. These are: iteratorsCount > 0 and values
 
 	const values: (T | PromiseLike<never>)[] = []
-	let iteratorsCount = 0
+	let iteratorsCount = 1
 	let mergeDone = false
 	let normalReturn = true
 
@@ -51,7 +51,6 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 
 	async function readRoot() {
 		try {
-			iteratorsCount++
 			for await (const sequence of forAwaitOfSyncWrapper(await sequences)) {
 				if (mergeDone) {
 					break
