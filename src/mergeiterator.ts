@@ -18,17 +18,17 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 	readRoot()
 
 	try {
-		while (iteratorsCount > 0 || values.length > 0) {
-			if (values.length > 0) {
+		while (iteratorsCount > 0) {
+			const oldOnDataNeeded = onDataNeeded
+
+			dataNeeded = new Promise(setOnDataNeeded)
+			const stateChanged = new Promise(setOnStateChanged)
+
+			oldOnDataNeeded()
+			await stateChanged
+
+			while (values.length > 0) {
 				yield values.shift() as T
-			} else {
-				const oldOnDataNeeded = onDataNeeded
-
-				dataNeeded = new Promise(setOnDataNeeded)
-				const stateChanged = new Promise(setOnStateChanged)
-
-				oldOnDataNeeded()
-				await stateChanged
 			}
 		}
 	} catch (error) {
@@ -43,7 +43,9 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 		// Do not hide an exception if it's been already raised.
 		if (normalReturn) {
 			// Raise possible exceptions on iterators interruption.
-			while (values.length > 0) await values.shift()
+			while (values.length > 0) {
+				await values.shift()
+			}
 		}
 	}
 
