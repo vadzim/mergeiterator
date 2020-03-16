@@ -1,3 +1,7 @@
+internal:
+
+* rename CHANGES -> CHANGELOG for https://yarnpkg.com/ to display changes
+
 ## 1.4.2
 
 security:
