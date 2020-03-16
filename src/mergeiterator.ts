@@ -11,11 +11,11 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 	let onStateChanged = () => {} // should be called whenever values used in the main `while` loop have been changed. These are: iteratorsCount > 0 and values
 
 	const values: (T | PromiseLike<never>)[] = []
-	let iteratorsCount = 1
+	let iteratorsCount = 0
 	let mergeDone = false
 	let normalReturn = true
 
-	readRoot()
+	countIterator(readRoot())
 
 	try {
 		while (iteratorsCount > 0) {
@@ -50,50 +50,46 @@ export async function* merge<T>(sequences: AnyIterable<AnyIterable<T>>): AsyncGe
 	}
 
 	async function readRoot() {
-		try {
-			for await (const sequence of forAwaitOfSyncWrapper(await sequences)) {
-				if (mergeDone) {
-					break
-				}
-				readChild(sequence as Iterable<T | PromiseLike<T>> | AsyncIterable<T>)
-				if (values.length > 0) {
-					await dataNeeded
-				}
-				if (mergeDone) {
-					break
-				}
+		for await (const sequence of forAwaitOfSyncWrapper(await sequences)) {
+			if (mergeDone) {
+				break
 			}
-		} catch (error) {
-			values.push(getError(error))
-			onStateChanged()
-		} finally {
-			iteratorsCount--
-			if (iteratorsCount === 0) {
-				onStateChanged()
+			countIterator(readChild(sequence as Iterable<T | PromiseLike<T>> | AsyncIterable<T>))
+			if (values.length > 0) {
+				await dataNeeded
+			}
+			if (mergeDone) {
+				break
 			}
 		}
 	}
 
 	async function readChild(sequence: Iterable<T | PromiseLike<T>> | AsyncIterable<T>) {
-		try {
-			iteratorsCount++
-			for await (const value of forAwaitOfSyncWrapper(sequence)) {
-				values.push(value)
-				onStateChanged()
-				await dataNeeded
-				if (mergeDone) {
-					break
-				}
-			}
-		} catch (error) {
-			values.push(getError(error))
+		for await (const value of forAwaitOfSyncWrapper(sequence)) {
+			values.push(value)
 			onStateChanged()
-		} finally {
-			iteratorsCount--
-			if (iteratorsCount === 0) {
-				onStateChanged()
+			await dataNeeded
+			if (mergeDone) {
+				break
 			}
 		}
+	}
+
+	function countIterator(reader: Promise<void>) {
+		iteratorsCount++
+		reader.then(
+			() => {
+				iteratorsCount--
+				if (iteratorsCount === 0) {
+					onStateChanged()
+				}
+			},
+			(error: unknown) => {
+				iteratorsCount--
+				values.push(getError(error))
+				onStateChanged()
+			},
+		)
 	}
 
 	function setOnStateChanged(resolve: () => void) {
