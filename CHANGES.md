@@ -1,3 +1,9 @@
+## 1.4.2
+
+security:
+
+* update used packages
+
 ## 1.4.1
 
 fix:
